@@ -19,6 +19,11 @@ let model = null;
 let collectedSamples = [];
 let latestLandmarks = null;
 
+let gestureModel = null;
+async function loadModel() {
+  gestureModel = await tf.loadLayersModel(chrome.runtime.getURL('model/model.json'));
+}
+
 const GESTURE_KEYS = {
   '1': "Open Hand",
   '2': "Point",
@@ -77,8 +82,8 @@ async function initializeCamera() {
   await video.play();
 }
 
-function drawHand(predictions) {
-  predictions.forEach(prediction => {
+async function drawHand(predictions) {
+  predictions.forEach(async (prediction) =>{
     const landmarks = prediction.landmarks;
 
     for (const [x, y] of landmarks) {
@@ -96,7 +101,7 @@ function drawHand(predictions) {
       pinky: landmarks[20]
     };
 
-    const gesture = detectGesture(landmarks);
+    const gesture = await detectGesture(landmarks);
     updateStableGesture(gesture);
 
     const normalized = normalizeLandmarks(landmarks);
@@ -156,7 +161,7 @@ async function renderLoop() {
 
   const predictions = await getFilteredHands(model, video);
   if (predictions.length > 0) {
-    drawHand(predictions);
+    await drawHand(predictions);
   } else {
     updateStableGesture(null);
     output.textContent = `🛑 No hand detected. Current gesture: ${getStableGesture()}`;
@@ -170,6 +175,7 @@ async function startGestureRecognition() {
 
   try {
     await initializeModel();
+    await loadModel();
     await initializeCamera();
     isRunning = true;
     renderLoop();

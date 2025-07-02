@@ -235,22 +235,32 @@ export function euclideanDistance(v1, v2) {
   return Math.sqrt(v1.reduce((sum, val, i) => sum + (val - v2[i]) ** 2, 0));
 }
 
-export function classifyGesture(normalizedLandmarkVec, threshold = 2.0) {
-  let bestMatch = null;
-  let minDist = Infinity;
+// export function classifyGesture(normalizedLandmarkVec, threshold = 2.0) {
+//   let bestMatch = null;
+//   let minDist = Infinity;
 
-  for (const [name, refVec] of Object.entries(gestureDatabase)) {
-    const dist = euclideanDistance(normalizedLandmarkVec, refVec);
-    if (dist < minDist) {
-      minDist = dist;
-      bestMatch = name;
-    }
-  }
+//   for (const [name, refVec] of Object.entries(gestureDatabase)) {
+//     const dist = euclideanDistance(normalizedLandmarkVec, refVec);
+//     if (dist < minDist) {
+//       minDist = dist;
+//       bestMatch = name;
+//     }
+//   }
 
-  return minDist < threshold ? bestMatch : null;
+//   return minDist < threshold ? bestMatch : null;
+// }
+
+export async function classifyGesture(model) {
+  const prediction = model.predict(inputTensor);
+  const predictedIndex = prediction.argMax(-1).dataSync()[0];
+
+  // If using label_map.json
+  const labelMap = await fetch(chrome.runtime.getURL('model/label_map.json')).then(res => res.json());
+  const predictedGesture = labelMap[predictedIndex];
 }
 
-export function detectGesture(landmarks) {
+export async function detectGesture(landmarks) {
   const normalized = normalizeLandmarks(landmarks);
-  return classifyGesture(normalized);
+  const res = await classifyGesture(normalized);
+  return res;
 }

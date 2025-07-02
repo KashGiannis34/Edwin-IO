@@ -6,7 +6,7 @@
   "license": "ISC",
   "scripts": {
     "dev": "parcel src/options.html src/popup.html src/background.js --dist-dir dist --no-source-maps --no-content-hash",
-    "build": "parcel build src/options.html src/popup.html src/background.js --dist-dir dist --no-content-hash && copy manifest.json dist\\ && xcopy icons dist\\icons /E /I /Y"
+    "build": "parcel build src/options.html src/popup.html src/background.js --dist-dir dist --no-content-hash && cp manifest.json dist/ && cp -r icons dist/icons"
   },
   "dependencies": {
     "@tensorflow-models/handpose": "^0.1.0",

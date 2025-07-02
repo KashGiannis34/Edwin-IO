@@ -21,7 +21,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["*.wasm"],
+      "resources": ["*.wasm", "model/*.json", "model/*.bin"],
       "matches": ["<all_urls>"]
     }
   ]
