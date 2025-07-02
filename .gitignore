@@ -1,5 +1,5 @@
-node_modules/
-dist/
-.parcelrc
-package-lock.json
-.parcel-cache/
+data-collection-pipeline/.parcel-cache
+data-collection-pipeline/node_modules
+data-collection-pipeline/dist
+data-collection-pipeline/package-lock.json
+collected-data/venv

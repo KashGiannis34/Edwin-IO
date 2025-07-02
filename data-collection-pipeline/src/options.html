@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>GestureDock Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    h1 {
+      margin-bottom: 0.5rem;
+    }
+
+    #start-button {
+      margin-bottom: 1rem;
+    }
+
+    .video-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid #ccc;
+      width: 320px;
+      height: 240px;
+      position: relative;
+    }
+
+    #output-canvas {
+      width: 320px;
+      height: 240px;
+    }
+
+    #gesture-output {
+      margin-top: 1rem;
+      font-size: 1rem;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>GestureDock Dashboard</h1>
+  <div id="gesture-keys" style="margin-top: 1rem;">
+    <h3>Gesture Keybinds</h3>
+    <ul id="gesture-keys-list" style="list-style: none; padding-left: 0;"></ul>
+  </div>
+  <button id="start-button">Enable Camera</button>
+
+  <video id="webcam" autoplay playsinline style="display: none;"></video>
+
+  <div class="video-wrapper">
+    <canvas id="output-canvas" width="320" height="240"></canvas>
+  </div>
+
+  <canvas id="normalized-canvas" width="300" height="300" style="border: 1px solid #ccc;"></canvas>
+
+  <p id="gesture-output"></p>
+  <div id="sample-counts" style="margin-top: 12px; font-family: sans-serif;">
+    <strong>Samples Collected:</strong>
+    <ul id="sample-list"></ul>
+  </div>
+
+  <script type="module" src="options.js"></script>
+</body>
+</html>
