@@ -1,0 +1,21 @@
+{
+  "name": "gesture-dock",
+  "version": "1.0.0",
+  "description": "Control your browser with hand gestures using your webcam.",
+  "author": "",
+  "license": "ISC",
+  "scripts": {
+    "dev": "parcel src/options.html src/popup.html src/background.js --dist-dir dist --no-source-maps --no-content-hash",
+    "build": "parcel build src/options.html src/popup.html src/background.js --dist-dir dist --no-content-hash && cp manifest.json dist/ && cp -r icons dist/icons && cp -r src/model dist/model",
+    "export": "cp -r dist/* /mnt/c/Users/akash/Desktop/gesture-dock"
+  },
+  "dependencies": {
+    "@tensorflow-models/handpose": "^0.1.0",
+    "@tensorflow/tfjs": "^4.22.0"
+  },
+  "devDependencies": {
+    "buffer": "^6.0.3",
+    "parcel": "^2.15.4",
+    "process": "^0.11.10"
+  }
+}

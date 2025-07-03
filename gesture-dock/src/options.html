@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>GestureDock Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    h1 {
+      margin-bottom: 0.5rem;
+    }
+
+    #start-button {
+      margin-bottom: 1rem;
+    }
+
+    .video-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid #ccc;
+      width: 320px;
+      height: 240px;
+      position: relative;
+    }
+
+    #output-canvas {
+      width: 320px;
+      height: 240px;
+    }
+
+    #gesture-output {
+      margin-top: 1rem;
+      font-size: 1rem;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>GestureDock Dashboard</h1>
+  <button id="start-button">Enable Camera</button>
+
+  <video id="webcam" autoplay playsinline style="display: none;"></video>
+
+  <div class="video-wrapper">
+    <canvas id="output-canvas" width="320" height="240"></canvas>
+  </div>
+
+  <p id="gesture-output"></p>
+
+  <script type="module" src="options.js"></script>
+</body>
+</html>
