@@ -1,8 +1,8 @@
 import os
 import json
 
-SOURCE_FOLDER = "/home/kashgiannis34/projects/gesture-control/collected-data/data_collection"
-OUTPUT_FOLDER = "/home/kashgiannis34/projects/gesture-control/collected-data"
+SOURCE_FOLDER = "/home/kashgiannis34/projects/gesture-control/gesture-model-pipeline/build-model/raw-samples"
+OUTPUT_FOLDER = "/home/kashgiannis34/projects/gesture-control/gesture-model-pipeline/build-model"
 OUTPUT_FILENAME = "combined_gesture_samples.json"
 
 def load_json_file(filepath):

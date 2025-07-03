@@ -1,5 +1,5 @@
 {
-  "name": "collected-data",
+  "name":"build-model",
   "version": "1.0.0",
   "description": "",
   "main": "train.js",

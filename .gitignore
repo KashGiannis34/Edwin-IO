@@ -1,7 +1,7 @@
-data-collection-pipeline/.parcel-cache
-data-collection-pipeline/node_modules
-data-collection-pipeline/dist
-data-collection-pipeline/package-lock.json
-collected-data/venv
-collected-data/node_modules
-collected-data/package-lock.json
+gesture-model-pipeline/data-collection/.parcel-cache
+gesture-model-pipeline/data-collection/node_modules
+gesture-model-pipeline/data-collection/dist
+gesture-model-pipeline/data-collection/package-lock.json
+gesture-model-pipeline/build-model/venv
+gesture-model-pipeline/build-model/node_modules
+gesture-model-pipeline/build-model/package-lock.json
