@@ -101,7 +101,7 @@ async function drawHand(predictions) {
       pinky: landmarks[20]
     };
 
-    const gesture = await detectGesture(landmarks);
+    const gesture = await detectGesture(landmarks, gestureModel, tf);
     updateStableGesture(gesture);
 
     const normalized = normalizeLandmarks(landmarks);

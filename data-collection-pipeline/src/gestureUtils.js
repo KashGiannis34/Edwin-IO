@@ -250,17 +250,19 @@ export function euclideanDistance(v1, v2) {
 //   return minDist < threshold ? bestMatch : null;
 // }
 
-export async function classifyGesture(model) {
+export async function classifyGesture(normalized, model, tf) {
+  const inputTensor = tf.tensor2d([normalized]);
   const prediction = model.predict(inputTensor);
   const predictedIndex = prediction.argMax(-1).dataSync()[0];
 
   // If using label_map.json
-  const labelMap = await fetch(chrome.runtime.getURL('model/label_map.json')).then(res => res.json());
+  const labelMap = await fetch(chrome.runtime.getURL('model/label_mapping.json')).then(res => res.json());
   const predictedGesture = labelMap[predictedIndex];
+  return predictedGesture;
 }
 
-export async function detectGesture(landmarks) {
+export async function detectGesture(landmarks, model, tf) {
   const normalized = normalizeLandmarks(landmarks);
-  const res = await classifyGesture(normalized);
+  const res = await classifyGesture(normalized, model, tf);
   return res;
 }

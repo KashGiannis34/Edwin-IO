@@ -1,8 +1,8 @@
 import os
 import json
 
-SOURCE_FOLDER = "data_collection"
-OUTPUT_FOLDER = "shared_results"
+SOURCE_FOLDER = "/home/kashgiannis34/projects/gesture-control/collected-data/data_collection"
+OUTPUT_FOLDER = "/home/kashgiannis34/projects/gesture-control/collected-data"
 OUTPUT_FILENAME = "combined_gesture_samples.json"
 
 def load_json_file(filepath):

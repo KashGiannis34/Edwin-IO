@@ -3,3 +3,5 @@ data-collection-pipeline/node_modules
 data-collection-pipeline/dist
 data-collection-pipeline/package-lock.json
 collected-data/venv
+collected-data/node_modules
+collected-data/package-lock.json
