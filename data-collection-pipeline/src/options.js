@@ -25,12 +25,14 @@ async function loadModel() {
 }
 
 const GESTURE_KEYS = {
-  '1': "Open Hand",
-  '2': "Point",
-  '3': "Two",
-  '4': "Three",
-  '5': "Four",
+  '1': "Point",
+  '2': "Two",
+  '3': "Three",
+  '4': "Four",
+  '5': "Open Hand",
   '6': "Surfer",
+  '7': "Thumb Point",
+  '8': "None",
   'd': "DOWNLOAD",
   'r': "RESET",
 };
