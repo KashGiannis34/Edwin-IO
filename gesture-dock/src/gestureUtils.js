@@ -58,6 +58,32 @@ export function normalizeLandmarks(landmarks) {
   return scaled.flat(); // Flatten to single vector
 }
 
+function getDirection(landmarks, tipIdx, baseIdx, mirrorEnabled) {
+  const [tx, ty] = landmarks[tipIdx];
+  const [bx, by] = landmarks[baseIdx];
+
+  const dx = (tx - bx)* (mirrorEnabled ? -1 : 1);
+  const dy = ty - by;
+
+  // Compare magnitudes to pick major axis
+  if (Math.abs(dx) > Math.abs(dy)) {
+    return dx > 0 ? 'right' : 'left';
+  } else {
+    return dy > 0 ? 'down' : 'up';
+  }
+}
+
+export function getPointingDirection(landmarks, gesture, mirrorEnabled = false) {
+  switch (gesture) {
+    case 'Point':
+      return getDirection(landmarks, 8, 5, mirrorEnabled);
+    case 'Thumb Point':
+      return getDirection(landmarks, 4, 2, mirrorEnabled);
+    default:
+      return null;
+  }
+}
+
 export async function classifyGesture(normalized, model, tf) {
   const inputTensor = tf.tensor2d([normalized]);
   const prediction = model.predict(inputTensor);

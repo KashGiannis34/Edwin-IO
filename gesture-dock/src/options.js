@@ -1,21 +1,55 @@
 import * as tf from '@tensorflow/tfjs';
 import * as handpose from '@tensorflow-models/handpose';
 
-import { getFilteredHands, updateStableGesture, detectGesture, getStableGesture } from './gestureUtils.js';
+import { getFilteredHands, updateStableGesture, detectGesture, getStableGesture, getPointingDirection } from './gestureUtils.js';
 
+let options = {};
 const video = document.getElementById("webcam");
 const canvas = document.getElementById("output-canvas");
 const ctx = canvas.getContext("2d");
 const output = document.getElementById("gesture-output");
-const startBtn = document.getElementById("start-button");
-
+const camToggle    = document.getElementById('camera-toggle');
+const mirrorToggle = document.getElementById('mirror-toggle');
+const wrapper = document.querySelector('.video-wrapper');
 
 let isRunning = false;
 let model = null;
+let rafId = null;
+let streamTracks = [];
 
 let gestureModel = null;
 async function loadModel() {
   gestureModel = await tf.loadLayersModel(chrome.runtime.getURL('model/model.json'));
+}
+
+function setUIVisible(on) {
+  document.getElementById('mirror-row')
+          .classList.toggle('hidden', !on);
+  document.getElementById('gesture-area')
+          .classList.toggle('hidden', !on);
+}
+
+function handleMirrorToggle() {
+  mirrorToggle.checked = options['mirrorEnabled'];
+  wrapper.classList.toggle('mirrored', options['mirrorEnabled']);
+  mirrorToggle.classList.toggle('mirrored', options['mirrorEnabled']);
+
+  mirrorToggle.addEventListener('change', async () => {
+    options['mirrorEnabled'] = mirrorToggle.checked;
+    wrapper.classList.toggle('mirrored', options['mirrorEnabled']);
+    mirrorToggle.classList.toggle('mirrored', options['mirrorEnabled']);
+    chrome.storage.sync.set(options);
+  });
+}
+
+async function initializeOptions() {
+  await initOption('mirrorEnabled', handleMirrorToggle);
+}
+
+async function initOption(key, extraActions) {
+  const data = await chrome.storage.sync.get(key);
+  options[key] = data[key];
+  extraActions();
 }
 
 async function initializeModel() {
@@ -27,6 +61,7 @@ async function initializeModel() {
 async function initializeCamera() {
   const stream = await navigator.mediaDevices.getUserMedia({ video: true });
   video.srcObject = stream;
+  streamTracks = stream.getTracks();
 
   await new Promise(resolve => {
     video.onloadedmetadata = () => {
@@ -39,24 +74,28 @@ async function initializeCamera() {
   await video.play();
 }
 
-async function drawHand(predictions) {
-  predictions.forEach(async (prediction) =>{
-    const landmarks = prediction.landmarks;
+function drawHand(landmarks) {
+  for (const [x, y] of landmarks) {
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, 2 * Math.PI);
+    ctx.fillStyle = 'lime';
+    ctx.fill();
+  }
+}
 
-    for (const [x, y] of landmarks) {
-      ctx.beginPath();
-      ctx.arc(x, y, 5, 0, 2 * Math.PI);
-      ctx.fillStyle = 'lime';
-      ctx.fill();
-    }
+async function handleGesture(landmarks) {
+  let gesture = await detectGesture(landmarks, gestureModel, tf);
 
-    const gesture = await detectGesture(landmarks, gestureModel, tf);
-    updateStableGesture(gesture);
+  if (gesture === 'Point' || gesture === 'Thumb Point') {
+    const pointingDirection = getPointingDirection(landmarks, gesture, options['mirrorEnabled']);
+    gesture += ` (${pointingDirection})`;
+  }
 
-    output.textContent = `✋ Hand Detected: ${getStableGesture()}`;
+  updateStableGesture(gesture);
 
-    chrome.runtime.sendMessage({ gesture });
-  });
+  output.textContent = `✋ Hand Detected: ${getStableGesture()}`;
+
+  chrome.runtime.sendMessage({ gesture });
 }
 
 async function renderLoop() {
@@ -64,23 +103,30 @@ async function renderLoop() {
 
   const predictions = await getFilteredHands(model, video);
   if (predictions.length > 0) {
-    await drawHand(predictions);
+    const landmarks = predictions[0].landmarks;
+    await drawHand(landmarks);
+
+    await handleGesture(landmarks);
   } else {
     updateStableGesture(null);
     output.textContent = `🛑 No hand detected. Current gesture: ${getStableGesture()}`;
   }
 
-  requestAnimationFrame(renderLoop);
+  rafId = requestAnimationFrame(renderLoop);
 }
 
 async function startGestureRecognition() {
-  if (isRunning) return;
+  if (isRunning || !camToggle.checked) return;
 
   try {
-    await initializeModel();
-    await loadModel();
-    await initializeCamera();
     isRunning = true;
+    setUIVisible(true);
+    await initializeModel();
+    if (!camToggle.checked) throw 'aborted';
+    await loadModel();
+    if (!camToggle.checked) throw 'aborted';
+    await initializeCamera();
+    if (!camToggle.checked) throw 'aborted';
     renderLoop();
   } catch (err) {
     console.error("Camera access denied:", err);
@@ -88,4 +134,23 @@ async function startGestureRecognition() {
   }
 }
 
-startBtn.onclick = startGestureRecognition;
+function stopGestureRecognition() {
+  if (!isRunning) return;
+  setUIVisible(false);
+  cancelAnimationFrame(rafId);
+  streamTracks.forEach(t => t.stop());
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  output.textContent = '';
+  isRunning = false;
+}
+
+camToggle.addEventListener('change', async () => {
+  if (camToggle.checked) {
+    await startGestureRecognition();
+  } else {
+    stopGestureRecognition();
+  }
+});
+
+await initializeOptions();
+setUIVisible(false);
