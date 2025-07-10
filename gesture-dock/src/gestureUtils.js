@@ -1,3 +1,5 @@
+import { triggerAction } from "./actionMap";
+
 let lastGesture = null;
 let stableGesture = null;
 let lastGestureTime = 0;
@@ -11,6 +13,7 @@ export function updateStableGesture(gesture) {
     lastGestureTime = now;
   } else if (now - lastGestureTime >= GESTURE_HOLD_TIME && gesture !== stableGesture) {
     stableGesture = gesture;
+    triggerAction(stableGesture);
   }
 }
 

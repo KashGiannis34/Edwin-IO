@@ -2,8 +2,9 @@ import * as tf from '@tensorflow/tfjs';
 import * as handpose from '@tensorflow-models/handpose';
 
 import { getFilteredHands, updateStableGesture, detectGesture, getStableGesture, getPointingDirection } from './gestureUtils.js';
+import { GESTURES, ACTIONS, DEFAULT_ACTION_MAP } from './actionMap.js';
 
-let options = {};
+export let options = {};
 const video = document.getElementById("webcam");
 const canvas = document.getElementById("output-canvas");
 const ctx = canvas.getContext("2d");
@@ -22,6 +23,81 @@ async function loadModel() {
   gestureModel = await tf.loadLayersModel(chrome.runtime.getURL('model/model.json'));
 }
 
+function createMappingPill(gesture, action) {
+  const pill = document.createElement('div');
+  pill.className = 'mapping-pill';
+
+  // Gesture dropdown
+  const gsel = document.createElement('select');
+  GESTURES.forEach(g => {
+    const o = document.createElement('option');
+    o.value = g; o.textContent = g;
+    if (g === gesture) o.selected = true;
+    gsel.append(o);
+  });
+  pill.append(gsel);
+
+  // Arrow
+  const arrow = document.createElement('span');
+  arrow.textContent = '→';
+  pill.append(arrow);
+
+  // Action dropdown
+  const asel = document.createElement('select');
+  ACTIONS.forEach(a => {
+    const o = document.createElement('option');
+    o.value = a.id; o.textContent = a.name;
+    if (a.id === action) o.selected = true;
+    asel.append(o);
+  });
+  pill.append(asel);
+
+  // Remove button
+  const btn = document.createElement('button');
+  btn.textContent = '✕';
+  pill.append(btn);
+
+  // Handlers
+  gsel.addEventListener('change', () => {
+    // Remove old key, add new
+    delete options.actionMap[gesture];
+    gesture = gsel.value;
+    options.actionMap[gesture] = asel.value;
+    setOption('actionMap', options.actionMap);
+  });
+  asel.addEventListener('change', () => {
+    options.actionMap[gesture] = asel.value;
+    setOption('actionMap', options.actionMap);
+  });
+  btn.addEventListener('click', () => {
+    delete options.actionMap[gesture];
+    pill.remove();
+    setOption('actionMap', options.actionMap);
+  });
+
+  return pill;
+}
+
+function handleActionMapUI() {
+  const container = document.getElementById('action-map-container');
+  container.innerHTML = '';
+  // build a pill for each existing mapping
+  Object.entries(options.actionMap).forEach(([g, a]) => {
+    container.append(createMappingPill(g, a));
+  });
+
+  // wire up “Add Mapping” button
+  document.getElementById('add-mapping').onclick = () => {
+    // pick first unused gesture
+    const used = new Set(Object.keys(options.actionMap));
+    const free = GESTURES.find(g => !used.has(g)) || GESTURES[0];
+    options.actionMap[free] = ACTIONS[0].id;
+    setOption('actionMap', options.actionMap);
+    // re-render
+    handleActionMapUI();
+  };
+}
+
 function setUIVisible(on) {
   document.getElementById('mirror-row')
           .classList.toggle('hidden', !on);
@@ -35,21 +111,32 @@ function handleMirrorToggle() {
   mirrorToggle.classList.toggle('mirrored', options['mirrorEnabled']);
 
   mirrorToggle.addEventListener('change', async () => {
-    options['mirrorEnabled'] = mirrorToggle.checked;
+    setOption('mirrorEnabled', mirrorToggle.checked, false);
     wrapper.classList.toggle('mirrored', options['mirrorEnabled']);
     mirrorToggle.classList.toggle('mirrored', options['mirrorEnabled']);
-    chrome.storage.sync.set(options);
   });
 }
 
 async function initializeOptions() {
-  await initOption('mirrorEnabled', handleMirrorToggle);
+  await initOption('mirrorEnabled', false, handleMirrorToggle);
+  await initOption('actionMap', DEFAULT_ACTION_MAP, handleActionMapUI);
 }
 
-async function initOption(key, extraActions) {
+async function initOption(key, defaultVal, extraActions) {
   const data = await chrome.storage.sync.get(key);
-  options[key] = data[key];
+  if (data[key] === undefined) {
+    setOption(key, defaultVal, false);
+  } else {
+    options[key] = data[key];
+  }
   extraActions();
+}
+
+function setOption(key, val, onlyChrome = true) {
+  if (!onlyChrome) {
+    options[key] = val;
+  }
+  chrome.storage.sync.set({ [key]: val });
 }
 
 async function initializeModel() {
