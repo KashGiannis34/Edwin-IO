@@ -5,8 +5,8 @@
   "author": "",
   "license": "ISC",
   "scripts": {
-    "dev": "parcel src/options.html src/popup.html src/background.js --dist-dir dist --no-source-maps --no-content-hash",
-    "build": "parcel build src/options.html src/popup.html src/background.js --dist-dir dist --no-content-hash && cp manifest.json dist/ && cp -r icons dist/icons && cp -r src/model dist/model",
+    "dev": "parcel src/options.html src/popup.html src/background.js src/offscreen.html --dist-dir dist --no-source-maps --no-content-hash",
+    "build": "parcel build src/options.html src/popup.html src/background.js src/offscreen.html --dist-dir dist --no-content-hash && cp manifest.json dist/ && cp -r icons dist/icons && cp -r src/model dist/model",
     "export": "cp -r dist/* /mnt/c/Users/akash/Desktop/gesture-dock"
   },
   "dependencies": {

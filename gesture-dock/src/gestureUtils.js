@@ -1,9 +1,24 @@
-import { triggerAction } from "./actionMap";
+import { ACTION_HANDLERS } from "./actionHandlers";
 
-let lastGesture = null;
-let stableGesture = null;
+let lastGesture = 'None';
+let stableGesture = 'None';
 let lastGestureTime = 0;
-const GESTURE_HOLD_TIME = 100; // milliseconds
+const labelMapPromise = fetch(chrome.runtime.getURL('model/label_mapping.json')).then(res => res.json());
+const GESTURE_HOLD_TIME = 100;
+
+async function triggerAction(gesture) {
+  const data = await chrome.storage.sync.get('actionMap');
+  const actionMap = data.actionMap;
+  if (!actionMap) return;
+
+  const actionId = actionMap[gesture];
+  if (!actionId) return;
+
+  const handler = ACTION_HANDLERS[actionId];
+  console.log(`Performing action: ${actionId}`);
+  if (handler) handler().catch(console.error);
+  return;
+}
 
 export function updateStableGesture(gesture) {
   const now = Date.now();
@@ -13,6 +28,7 @@ export function updateStableGesture(gesture) {
     lastGestureTime = now;
   } else if (now - lastGestureTime >= GESTURE_HOLD_TIME && gesture !== stableGesture) {
     stableGesture = gesture;
+    console.log(`Stable gesture updated: ${stableGesture}`);
     triggerAction(stableGesture);
   }
 }
@@ -40,7 +56,7 @@ export function normalizeLandmarks(landmarks) {
   const [x0, y0] = landmarks[0]; // wrist
   const translated = landmarks.map(([x, y]) => [x - x0, y - y0]);
 
-  // Palm direction: wrist (0) → middle MCP (9)
+  // Palm direction: wrist (0) -> middle MCP (9)
   const [dx, dy] = [translated[9][0], translated[9][1]];
   const angle = Math.atan2(dy, dx); // Y-up rotation only
 
@@ -58,7 +74,7 @@ export function normalizeLandmarks(landmarks) {
     .reduce((a, b) => a + b, 0) / mcpIndices.length || 1;
 
   const scaled = rotated.map(([x, y]) => [x / avgDist, y / avgDist]);
-  return scaled.flat(); // Flatten to single vector
+  return scaled.flat();
 }
 
 function getDirection(landmarks, tipIdx, baseIdx, mirrorEnabled) {
@@ -92,7 +108,7 @@ export async function classifyGesture(normalized, model, tf) {
   const prediction = model.predict(inputTensor);
   const predictedIndex = prediction.argMax(-1).dataSync()[0];
 
-  const labelMap = await fetch(chrome.runtime.getURL('model/label_mapping.json')).then(res => res.json());
+  const labelMap = await labelMapPromise;
   const predictedGesture = labelMap[predictedIndex];
   return predictedGesture;
 }

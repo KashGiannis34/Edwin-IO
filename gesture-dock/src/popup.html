@@ -1,11 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>GestureDock</title>
+  <title>Gesture Control</title>
+  <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <h1>GestureDock</h1>
-  <button id="open-dashboard">Open Dashboard</button>
-  <script type="module" src="popup.js"></script>
+  <div class="container">
+    <span>Enable Gestures</span>
+    <label class="switch">
+      <input type="checkbox" id="recognition-toggle">
+      <span class="slider"></span>
+    </label>
+    <span>Mirror Camera</span>
+    <label class="switch">
+      <input type="checkbox" id="mirror-toggle">
+      <span class="slider"></span>
+    </label>
+  </div>
+  <script src="popup.js"></script>
 </body>
 </html>

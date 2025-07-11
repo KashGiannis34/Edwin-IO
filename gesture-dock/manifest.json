@@ -3,8 +3,16 @@
   "name": "Gesture Dock",
   "version": "2.0",
   "description": "Control your browser with hand gestures.",
-  "permissions": ["scripting", "storage", "activeTab"],
-  "host_permissions": ["<all_urls>"],
+  "permissions": [
+    "storage",
+    "scripting",
+    "offscreen",
+    "tabs",
+    "sessions"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
@@ -20,8 +28,15 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["*.wasm", "model/*.json", "model/*.bin"],
-      "matches": ["<all_urls>"]
+      "resources": [
+        "offscreen.html",
+        "*.wasm",
+        "model/*.json",
+        "model/*.bin"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
   ],
   "options_ui": {

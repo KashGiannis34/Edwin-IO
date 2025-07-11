@@ -1,5 +1,3 @@
-import { options } from "./options";
-
 export const GESTURES = [
   "Open Hand",
   "Fist",
@@ -49,12 +47,3 @@ export const DEFAULT_ACTION_MAP = {
   "Four":            "reloadPage",
   "Open Hand":       "openOptions"
 };
-
-export function triggerAction(gesture) {
-  const actionId = options.actionMap[gesture];
-  if (!actionId) return;
-  chrome.runtime.sendMessage({
-    type: 'performAction',
-    actionId
-  });
-}
