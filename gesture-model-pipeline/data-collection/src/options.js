@@ -117,6 +117,8 @@ Middle: ${fingers.middle.map(n => n.toFixed(0)).join(', ')}
 Ring: ${fingers.ring.map(n => n.toFixed(0)).join(', ')}
 Pinky: ${fingers.pinky.map(n => n.toFixed(0)).join(', ')}`;
 
+    console.log('Normalized landmarks:', normalized);
+
     chrome.runtime.sendMessage({ gesture });
   });
 }
@@ -153,7 +155,7 @@ function updateSampleCountsDisplay() {
 function saveGestureSample(label, landmarks) {
   if (landmarks.length === 42) {
     collectedSamples.push({ label, vector: landmarks });
-    updateSampleCountsDisplay();  // 🔥 update UI
+    updateSampleCountsDisplay();
     console.log(`Saved sample for "${label}". Total samples: ${collectedSamples.length}`);
   }
 }

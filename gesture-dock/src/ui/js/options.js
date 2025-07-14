@@ -1,4 +1,6 @@
 import { GESTURES, ACTIONS, DEFAULT_ACTION_MAP } from './actionMap.js';
+import * as tf from '@tensorflow/tfjs';
+import * as handpose from '@tensorflow-models/handpose';
 
 // ACTION MAP UI CODE
 let actionMap = {};
@@ -93,33 +95,42 @@ const gestureOutput = document.getElementById("gesture-output");
 
 const displayCanvas = document.getElementById("output-canvas");
 const displayCtx = displayCanvas.getContext("2d");
-const processingCanvas = document.getElementById("processing-canvas");
-const processingCtx = processingCanvas.getContext("2d", { willReadFrequently: true });
 
 let localStream = null;
 let latestLandmarks = null;
 let lastFrameSendTime = 0;
 let animationFrameId = null;
+let handposeModel = null;
 
 const port = chrome.runtime.connect({ name: "options-page" });
+
+async function setupHandposeModel() {
+  if (handposeModel) return;
+  await tf.setBackend('webgl');
+  await tf.ready();
+  handposeModel = await handpose.load();
+  console.log("Handpose model loaded in options page.");
+}
 
 async function startLocalCamera() {
   if (localStream) return;
   try {
     gestureArea.style.display = 'block';
+    gestureOutput.textContent = "Loading model...";
+
+    await setupHandposeModel();
+
+    gestureOutput.textContent = "Starting camera...";
     localStream = await navigator.mediaDevices.getUserMedia({ video: true });
     video.srcObject = localStream;
-
     video.onloadedmetadata = () => {
       displayCanvas.width = video.videoWidth;
       displayCanvas.height = video.videoHeight;
-      processingCanvas.width = video.videoWidth;
-      processingCanvas.height = video.videoHeight;
       renderLoop();
     };
-
     await video.play();
   } catch (err) {
+    console.error("Could not start camera on options page:", err);
     gestureOutput.textContent = "❌ Camera access denied or unavailable.";
   }
 }
@@ -136,35 +147,68 @@ function stopLocalCamera() {
 function drawHand(landmarks) {
   displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
   if (!landmarks) return;
-  displayCtx.fillStyle = 'lime';
-  for (const [x, y] of landmarks) {
+
+  const connections = [
+    // Palm
+    [0, 1], [0, 5], [0, 17], [5, 9], [9, 13], [13, 17],
+    // Thumb
+    [1, 2], [2, 3], [3, 4],
+    // Index Finger
+    [5, 6], [6, 7], [7, 8],
+    // Middle Finger
+    [9, 10], [10, 11], [11, 12],
+    // Ring Finger
+    [13, 14], [14, 15], [15, 16],
+    // Pinky
+    [17, 18], [18, 19], [19, 20]
+  ];
+
+  displayCtx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+  displayCtx.lineWidth = 2;
+
+  for (const connection of connections) {
+    const [startIdx, endIdx] = connection;
+    const startPoint = landmarks[startIdx];
+    const endPoint = landmarks[endIdx];
+
     displayCtx.beginPath();
-    displayCtx.arc(x, y, 5, 0, 2 * Math.PI);
+    displayCtx.moveTo(startPoint[0], startPoint[1]);
+    displayCtx.lineTo(endPoint[0], endPoint[1]);
+    displayCtx.stroke();
+  }
+
+  displayCtx.fillStyle = '#00B6FF';
+  for (const landmark of landmarks) {
+    displayCtx.beginPath();
+    displayCtx.arc(landmark[0], landmark[1], 4, 0, 2 * Math.PI);
     displayCtx.fill();
   }
 }
 
-function renderLoop() {
-  if (!localStream?.active) return;
+async function renderLoop() {
+  if (!localStream?.active || !handposeModel) return;
 
+  // Detect hands first
+  const predictions = await handposeModel.estimateHands(video);
+  latestLandmarks = predictions.length > 0 ? predictions[0].landmarks : null;
+
+  // Draw video and landmarks
+  displayCtx.drawImage(video, 0, 0, displayCanvas.width, displayCanvas.height);
   drawHand(latestLandmarks);
 
+  // Send landmark data at a throttled rate
   const now = performance.now();
-  if (now - lastFrameSendTime > 100) {
+  if (now - lastFrameSendTime > 17) {
     lastFrameSendTime = now;
-
-    processingCtx.drawImage(video, 0, 0, processingCanvas.width, processingCanvas.height);
-    const imageData = processingCtx.getImageData(0, 0, processingCanvas.width, processingCanvas.height);
-
     chrome.runtime.sendMessage({
-      type: 'videoFrame',
-      frame: { data: imageData.data, width: imageData.width, height: imageData.height }
+      type: 'landmarks',
+      landmarks: latestLandmarks
     });
   }
   animationFrameId = requestAnimationFrame(renderLoop);
 }
 
-// RUNTIME CODE
+// LISTENERS
 document.addEventListener('DOMContentLoaded', async () => {
   await initActionMap(DEFAULT_ACTION_MAP, handleActionMapUI);
   stopLocalCamera();
@@ -177,9 +221,8 @@ window.addEventListener("beforeunload", () => {
 port.onMessage.addListener((msg) => {
   switch (msg.type) {
     case "gesture-data":
-      const { gesture, landmarks } = msg.data;
+      const { gesture } = msg.data;
       gestureOutput.textContent = `Detected Gesture: ${gesture || 'None'}`;
-      latestLandmarks = landmarks;
       break;
     case "start-camera":
       startLocalCamera();

@@ -1,45 +1,51 @@
+import * as tf from '@tensorflow/tfjs';
+import * as handpose from '@tensorflow-models/handpose';
+
 const video = document.getElementById('webcam');
-let canvas;
-let ctx;
+let handposeModel = null;
+let localStream = null;
 
 chrome.runtime.onMessage.addListener(async (msg) => {
   if (msg.target === 'offscreen' && msg.type === 'start-camera') {
     await startCamera();
   }
-  return true;
 });
 
+async function setupHandposeModel() {
+  if (handposeModel) return;
+  await tf.setBackend('webgl');
+  await tf.ready();
+  handposeModel = await handpose.load();
+  console.log("Handpose model loaded in offscreen document.");
+}
+
 async function startCamera() {
+  if (localStream) return;
   try {
+    await setupHandposeModel();
+
     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    localStream = stream;
     video.srcObject = stream;
     await video.play();
-
-    canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    ctx = canvas.getContext('2d', { willReadFrequently: true });
-
-    sendFrame();
+    sendLandmarksLoop();
   } catch (err) {
     console.error("Error starting camera in offscreen:", err);
   }
 }
 
-function sendFrame() {
-  if (!video.srcObject?.active) return;
+async function sendLandmarksLoop() {
+  if (!localStream?.active || !handposeModel) {
+    return;
+  }
 
-  ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-  const imageData = ctx.getImageData(0, 0, video.videoWidth, video.videoHeight);
+  const predictions = await handposeModel.estimateHands(video);
+  const landmarks = predictions.length > 0 ? predictions[0].landmarks : null;
 
   chrome.runtime.sendMessage({
-    type: 'videoFrame',
-    frame: {
-      data: imageData.data,
-      width: imageData.width,
-      height: imageData.height,
-    }
+    type: 'landmarks',
+    landmarks: landmarks
   });
 
-  setTimeout(sendFrame, 100); // Process roughly 10 frames per second
+  setTimeout(sendLandmarksLoop, 100);
 }

@@ -3,7 +3,8 @@ import { ACTION_HANDLERS } from "./actionHandlers";
 let lastGesture = 'None';
 let stableGesture = 'None';
 let lastGestureTime = 0;
-const labelMapPromise = fetch(chrome.runtime.getURL('model/label_mapping.json')).then(res => res.json());
+const labelMapUrl = `${chrome.runtime.getURL('core/model/label_mapping.json')}?t=${Date.now()}`;
+const labelMapPromise = fetch(labelMapUrl).then(res => res.json());
 const GESTURE_HOLD_TIME = 100;
 
 async function triggerAction(gesture) {
@@ -74,6 +75,7 @@ export function normalizeLandmarks(landmarks) {
     .reduce((a, b) => a + b, 0) / mcpIndices.length || 1;
 
   const scaled = rotated.map(([x, y]) => [x / avgDist, y / avgDist]);
+  console.log("Normalized landmarks:", scaled.flat());
   return scaled.flat();
 }
 
@@ -114,6 +116,8 @@ export async function classifyGesture(normalized, model, tf) {
 }
 
 export async function detectGesture(landmarks, model, tf) {
+  console.log("Pure landmark: ", landmarks);
+  console.log("Landmark array for gesture detection:", landmarks);
   const normalized = normalizeLandmarks(landmarks);
   const res = await classifyGesture(normalized, model, tf);
   return res;
