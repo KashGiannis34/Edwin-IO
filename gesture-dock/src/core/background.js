@@ -5,8 +5,23 @@ import { getFilteredHands, updateStableGesture, detectGesture, getPointingDirect
 let handposeModel = null;
 let gestureModel = null;
 let optionsPort = null;
+let optionsTabId = null;
 const offscreenDocumentPath = 'ui/offscreen.html';
 let isRecognitionGloballyActive = false;
+let currentOptions = {};
+let activeCameraSource = 'none';
+let isCreatingOffscreenDocument = false;
+let isClosingOffscreenDocument = false;
+
+async function initializeOptions() {
+  const data = await chrome.storage.sync.get(['mirrorEnabled', 'actionMap']);
+  currentOptions.mirrorEnabled = data.mirrorEnabled ?? false;
+  currentOptions.actionMap = data.actionMap;
+  console.log("Options initialized/updated:", currentOptions);
+}
+
+chrome.storage.onChanged.addListener(initializeOptions);
+initializeOptions();
 
 async function setupModels() {
   if (handposeModel && gestureModel) return;
@@ -20,13 +35,26 @@ async function setupModels() {
 }
 
 async function startOffscreenDocument() {
-  if (!(await hasOffscreenDocument())) {
+  if (isCreatingOffscreenDocument) return;
+
+  isCreatingOffscreenDocument = true;
+
+  if (!isRecognitionGloballyActive || (await hasOffscreenDocument())) {
+    return;
+  }
+
+  try {
+    console.log("Starting offscreen document...");
     await chrome.offscreen.createDocument({
         url: 'ui/offscreen.html',
         reasons: ['USER_MEDIA'],
         justification: 'To process hand gestures from the webcam.',
     });
     chrome.runtime.sendMessage({ type: 'start-camera', target: 'offscreen' });
+  } catch (error) {
+    console.error("Error creating offscreen document:", error);
+  } finally {
+    isCreatingOffscreenDocument = false;
   }
 }
 
@@ -36,9 +64,20 @@ async function hasOffscreenDocument() {
 }
 
 async function closeOffscreenDocument() {
-    if (await hasOffscreenDocument()) {
-        await chrome.offscreen.closeDocument();
+  if (isClosingOffscreenDocument) return;
+
+  try {
+    isClosingOffscreenDocument = true;
+
+    if (await chrome.offscreen.hasDocument()) {
+      console.log("Closing offscreen document...");
+      await chrome.offscreen.closeDocument();
     }
+  } catch (error) {
+    console.error("Error closing offscreen document:", error);
+  } finally {
+    isClosingOffscreenDocument = false;
+  }
 }
 
 async function processFrame(frameData) {
@@ -47,98 +86,114 @@ async function processFrame(frameData) {
     return;
   }
 
-  const pixelData = new Uint8ClampedArray(Object.values(frameData.data));
-  const imageData = new ImageData(
-    pixelData,
-    frameData.width,
-    frameData.height
-  );
+  try {
+    const pixelData = new Uint8ClampedArray(Object.values(frameData.data));
+    const imageData = new ImageData(pixelData, frameData.width, frameData.height);
 
-  const predictions = await getFilteredHands(handposeModel, imageData);
-  if (predictions.length > 0) {
-    const landmarks = predictions[0].landmarks;
-    let gesture = await detectGesture(landmarks, gestureModel, tf);
-    if (gesture === 'Point' || gesture === 'Thumb Point') {
-      const data = await chrome.storage.sync.get('mirrorEnabled');
+    const predictions = await getFilteredHands(handposeModel, imageData);
+    if (predictions.length > 0) {
+      const landmarks = predictions[0].landmarks;
+      let gesture = await detectGesture(landmarks, gestureModel, tf);
 
-      const pointingDirection = getPointingDirection(landmarks, gesture, data.mirrorEnabled);
-      gesture += ` (${pointingDirection})`;
+      if (gesture === 'Point' || gesture === 'Thumb Point') {
+        const pointingDirection = getPointingDirection(landmarks, gesture, currentOptions.mirrorEnabled);
+        gesture += ` (${pointingDirection})`;
+      }
+      updateStableGesture(gesture);
+
+      if (optionsPort) {
+        console.log("Sending gesture data to options page:", gesture);
+        optionsPort.postMessage({
+          type: "gesture-data",
+          data: { gesture: getStableGesture(), landmarks }
+        });
+      }
+    } else {
+      updateStableGesture('None');
+      if (optionsPort) {
+        optionsPort.postMessage({
+          type: "gesture-data",
+          data: { gesture: 'None', landmarks: null }
+        });
+      }
     }
-
-    updateStableGesture(gesture);
-
-    if (optionsPort) {
-      optionsPort.postMessage({
-        type: "gesture-data",
-        data: { gesture: getStableGesture(), landmarks }
-      });
-    }
-  } else {
-    updateStableGesture('None');
-
-    if (optionsPort) {
-      optionsPort.postMessage({
-        type: "gesture-data",
-        data: { gesture: 'None', landmarks: null }
-      });
-    }
+  } catch (error) {
+    console.error("Error processing frame:", error);
   }
 }
 
 async function toggleRecognition(isActive) {
   isRecognitionGloballyActive = isActive;
+
   if (isActive) {
     await setupModels();
+  }
 
-    if (!optionsPort) {
-      await startOffscreenDocument();
+  await manageCameraSource();
+}
+
+async function manageCameraSource() {
+  let desiredSource = 'none';
+  if (isRecognitionGloballyActive) {
+    const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (optionsTabId && activeTab && activeTab.id === optionsTabId) {
+      desiredSource = 'options';
+    } else {
+      desiredSource = 'offscreen';
     }
-  } else {
+  }
+
+  if (desiredSource === activeCameraSource) {
+    return;
+  }
+
+  console.log(`Switching camera source from '${activeCameraSource}' to '${desiredSource}'`);
+
+  if (activeCameraSource === 'options' && optionsPort) {
+    optionsPort.postMessage({ type: 'stop-camera' });
+  } else if (activeCameraSource === 'offscreen') {
     await closeOffscreenDocument();
   }
+
+  if (desiredSource === 'options' && optionsPort) {
+    optionsPort.postMessage({ type: 'start-camera' });
+  } else if (desiredSource === 'offscreen') {
+    await startOffscreenDocument();
+  }
+
+  activeCameraSource = desiredSource;
 }
 
 chrome.runtime.onConnect.addListener(async (port) => {
   if (port.name === "options-page") {
     optionsPort = port;
-    console.log("Options page connected. Shutting down offscreen document.");
-    await closeOffscreenDocument(); // Free up the camera for the options page
-    await setupModels();
+    optionsTabId = port.sender.tab.id;
+    console.log("Options page connected with tabId:", optionsTabId);
+
+    await manageCameraSource(); // Initial check when page connects
 
     port.onDisconnect.addListener(async () => {
-      optionsPort = null;
       console.log("Options page disconnected.");
-      // If recognition is supposed to be on, restart the offscreen document
-      if (isRecognitionGloballyActive) {
-        console.log("Restarting offscreen document for background processing.");
-        await startOffscreenDocument();
+      if (activeCameraSource === 'options') {
+        activeCameraSource = 'none';
       }
+      optionsPort = null;
+      optionsTabId = null;
+      await manageCameraSource(); // Switch back to offscreen if needed
     });
   }
 });
 
-chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
-  if (message.type === "video-stream-forward") {
-    if (optionsPort) {
-      optionsPort.postMessage({
-        type: "video-stream",
-        stream: message.stream
-      });
-    }
-    return;
-  }
+chrome.tabs.onActivated.addListener(manageCameraSource);
+chrome.windows.onFocusChanged.addListener(manageCameraSource);
 
-  if (message.type === 'videoFrame') {
-    if (await hasOffscreenDocument()) {
-      console.log("2: Background received frame");
+chrome.runtime.onMessage.addListener(async (message) => {
+  switch (message.type) {
+    case 'videoFrame':
       await processFrame(message.frame);
-    }
-    return;
-  }
-
-  if (message.type === 'toggle-recognition') {
-    await toggleRecognition(message.isActive);
-    await sendResponse({ success: true });
-    return true;
+      break;
+    case 'toggle-recognition':
+      await toggleRecognition(message.isActive);
+      break;
   }
 });

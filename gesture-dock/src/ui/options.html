@@ -5,13 +5,14 @@
   <link rel="stylesheet" href="css/options.css">
 </head>
 <body>
-  <h1>Live Camera Feed</h1>
   <div id="gesture-area">
+    <h1>Live Camera Feed</h1>
     <div class="video-wrapper">
       <video id="webcam" autoplay playsinline></video>
       <canvas id="output-canvas"></canvas>
+      <canvas id="processing-canvas"></canvas>
     </div>
-    <p id="gesture-output">Waiting for camera...</p>
+    <p id="gesture-output"></p>
   </div>
 
   <h1>Gesture to Action Mapping</h1>

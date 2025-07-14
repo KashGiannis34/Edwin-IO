@@ -3,17 +3,8 @@ let canvas;
 let ctx;
 
 chrome.runtime.onMessage.addListener(async (msg) => {
-  if (msg.target === 'offscreen') {
-    if (msg.type === 'start-camera') {
-      await startCamera();
-    } else if (msg.type === 'get-video') {
-      if (video.srcObject) {
-        chrome.runtime.sendMessage({
-          type: "video-stream-forward",
-          stream: video.srcObject
-        });
-      }
-    }
+  if (msg.target === 'offscreen' && msg.type === 'start-camera') {
+    await startCamera();
   }
   return true;
 });
@@ -36,13 +27,11 @@ async function startCamera() {
 }
 
 function sendFrame() {
-  // Ensure the video stream is still active
   if (!video.srcObject?.active) return;
 
   ctx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
   const imageData = ctx.getImageData(0, 0, video.videoWidth, video.videoHeight);
 
-  // Send the raw data, width, and height instead of the whole object
   chrome.runtime.sendMessage({
     type: 'videoFrame',
     frame: {
@@ -52,6 +41,5 @@ function sendFrame() {
     }
   });
 
-  // Use a timeout to control frame rate and reduce load
   setTimeout(sendFrame, 100); // Process roughly 10 frames per second
 }

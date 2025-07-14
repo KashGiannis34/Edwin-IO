@@ -88,92 +88,104 @@ async function initActionMap(defaultVal, extraActions) {
 
 // CAMERA FEED CODE
 const video = document.getElementById("webcam");
-const canvas = document.getElementById("output-canvas");
-const ctx = canvas.getContext("2d", { willReadFrequently: true });
+const gestureArea = document.getElementById("gesture-area");
 const gestureOutput = document.getElementById("gesture-output");
+
+const displayCanvas = document.getElementById("output-canvas");
+const displayCtx = displayCanvas.getContext("2d");
+const processingCanvas = document.getElementById("processing-canvas");
+const processingCtx = processingCanvas.getContext("2d", { willReadFrequently: true });
+
 let localStream = null;
-let frameInterval = null;
 let latestLandmarks = null;
+let lastFrameSendTime = 0;
+let animationFrameId = null;
 
 const port = chrome.runtime.connect({ name: "options-page" });
 
 async function startLocalCamera() {
+  if (localStream) return;
   try {
+    gestureArea.style.display = 'block';
     localStream = await navigator.mediaDevices.getUserMedia({ video: true });
     video.srcObject = localStream;
 
     video.onloadedmetadata = () => {
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-
-      if (frameInterval) clearInterval(frameInterval);
-      frameInterval = setInterval(sendFrameToBackground, 100);
-
+      displayCanvas.width = video.videoWidth;
+      displayCanvas.height = video.videoHeight;
+      processingCanvas.width = video.videoWidth;
+      processingCanvas.height = video.videoHeight;
       renderLoop();
     };
 
     await video.play();
   } catch (err) {
-    console.error("Could not start camera on options page:", err);
     gestureOutput.textContent = "❌ Camera access denied or unavailable.";
   }
 }
 
-function sendFrameToBackground() {
-  if (!video.srcObject?.active) {
-    clearInterval(frameInterval);
-    return;
-  }
-  const tempCanvas = new OffscreenCanvas(video.videoWidth, video.videoHeight);
-  const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
-  tempCtx.drawImage(video, 0, 0, video.videoWidth, video.videoHeight);
-  const imageData = tempCtx.getImageData(0, 0, video.videoWidth, video.videoHeight);
-
-  chrome.runtime.sendMessage({
-    type: 'videoFrame',
-    frame: {
-      data: imageData.data,
-      width: imageData.width,
-      height: imageData.height,
-    }
-  });
+function stopLocalCamera() {
+  gestureArea.style.display = 'none';
+  if (!localStream) return;
+  cancelAnimationFrame(animationFrameId);
+  localStream.getTracks().forEach(track => track.stop());
+  localStream = null;
+  video.srcObject = null;
 }
 
 function drawHand(landmarks) {
+  displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
   if (!landmarks) return;
-  ctx.fillStyle = 'lime';
+  displayCtx.fillStyle = 'lime';
   for (const [x, y] of landmarks) {
-    ctx.beginPath();
-    ctx.arc(x, y, 5, 0, 2 * Math.PI);
-    ctx.fill();
+    displayCtx.beginPath();
+    displayCtx.arc(x, y, 5, 0, 2 * Math.PI);
+    displayCtx.fill();
   }
 }
 
 function renderLoop() {
-  // Draw the current video frame onto the canvas
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  // Draw the latest hand landmarks on top of the video
-  drawHand(latestLandmarks);
-  // Continue the loop
-  requestAnimationFrame(renderLoop);
-}
+  if (!localStream?.active) return;
 
+  drawHand(latestLandmarks);
+
+  const now = performance.now();
+  if (now - lastFrameSendTime > 100) {
+    lastFrameSendTime = now;
+
+    processingCtx.drawImage(video, 0, 0, processingCanvas.width, processingCanvas.height);
+    const imageData = processingCtx.getImageData(0, 0, processingCanvas.width, processingCanvas.height);
+
+    chrome.runtime.sendMessage({
+      type: 'videoFrame',
+      frame: { data: imageData.data, width: imageData.width, height: imageData.height }
+    });
+  }
+  animationFrameId = requestAnimationFrame(renderLoop);
+}
 
 // RUNTIME CODE
 document.addEventListener('DOMContentLoaded', async () => {
   await initActionMap(DEFAULT_ACTION_MAP, handleActionMapUI);
-  startLocalCamera();
+  stopLocalCamera();
 });
 
 window.addEventListener("beforeunload", () => {
-  if (frameInterval) clearInterval(frameInterval);
-  localStream?.getTracks().forEach(track => track.stop());
+  stopLocalCamera();
 });
 
 port.onMessage.addListener((msg) => {
-  if (msg.type === "gesture-data") {
-    const { gesture, landmarks } = msg.data;
-    gestureOutput.textContent = `Detected Gesture: ${gesture || 'None'}`;
-    latestLandmarks = landmarks; // Update the landmarks for the render loop to use
+  switch (msg.type) {
+    case "gesture-data":
+      const { gesture, landmarks } = msg.data;
+      gestureOutput.textContent = `Detected Gesture: ${gesture || 'None'}`;
+      latestLandmarks = landmarks;
+      break;
+    case "start-camera":
+      startLocalCamera();
+      break;
+    case "stop-camera":
+      stopLocalCamera();
+      break;
   }
 });
