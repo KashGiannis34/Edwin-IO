@@ -12,6 +12,14 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 15px;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
 }
 
 .switch {

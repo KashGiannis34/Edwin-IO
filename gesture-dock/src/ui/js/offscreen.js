@@ -1,5 +1,3 @@
-// offscreen.js
-
 const video = document.getElementById('webcam');
 let canvas;
 let ctx;
@@ -8,6 +6,13 @@ chrome.runtime.onMessage.addListener(async (msg) => {
   if (msg.target === 'offscreen') {
     if (msg.type === 'start-camera') {
       await startCamera();
+    } else if (msg.type === 'get-video') {
+      if (video.srcObject) {
+        chrome.runtime.sendMessage({
+          type: "video-stream-forward",
+          stream: video.srcObject
+        });
+      }
     }
   }
   return true;

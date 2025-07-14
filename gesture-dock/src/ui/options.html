@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>GestureDock Settings</title>
+  <link rel="stylesheet" href="css/options.css">
+</head>
+<body>
+  <h1>Live Camera Feed</h1>
+  <div id="gesture-area">
+    <div class="video-wrapper">
+      <video id="webcam" autoplay playsinline></video>
+      <canvas id="output-canvas"></canvas>
+    </div>
+    <p id="gesture-output">Waiting for camera...</p>
+  </div>
+
+  <h1>Gesture to Action Mapping</h1>
+  <div id="action-map-container" class="action-map-container"></div>
+  <button id="add-mapping">+ Add New Mapping</button>
+
+  <script type="module" src="js/options.js"></script>
+</body>
+</html>

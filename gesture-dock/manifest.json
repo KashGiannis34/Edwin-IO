@@ -14,13 +14,13 @@
     "<all_urls>"
   ],
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "ui/popup.html",
     "default_icon": {
       "128": "icons/icon128.png"
     }
   },
   "background": {
-    "service_worker": "background.js",
+    "service_worker": "core/background.js",
     "type": "module"
   },
   "icons": {
@@ -29,10 +29,10 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "offscreen.html",
+        "ui/offscreen.html",
         "*.wasm",
-        "model/*.json",
-        "model/*.bin"
+        "core/model/*.json",
+        "core/model/*.bin"
       ],
       "matches": [
         "<all_urls>"
@@ -40,7 +40,7 @@
     }
   ],
   "options_ui": {
-    "page": "options.html",
+    "page": "ui/options.html",
     "open_in_tab": true
   }
 }
