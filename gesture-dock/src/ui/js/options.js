@@ -6,7 +6,7 @@ import { getFilteredHands } from '../../core/gestureUtils.js';
 // ACTION MAP UI CODE
 let actionMap = {};
 
-function createMappingPill(gesture, action) {
+function createMappingPill(gesture, actionObj) {
   const pill = document.createElement('div');
   pill.className = 'mapping-pill';
 
@@ -17,41 +17,116 @@ function createMappingPill(gesture, action) {
     if (g === gesture) o.selected = true;
     gsel.append(o);
   });
-  pill.append(gsel);
-
-  const arrow = document.createElement('span');
-  arrow.textContent = '→';
-  pill.append(arrow);
 
   const asel = document.createElement('select');
   ACTIONS.forEach(a => {
     const o = document.createElement('option');
-    o.value = a.id; o.textContent = a.name;
-    if (a.id === action) o.selected = true;
+    o.value = a.id;
+    o.textContent = a.name;
+    if (a.id === actionObj.id) o.selected = true;
     asel.append(o);
   });
-  pill.append(asel);
+
+  const valueContainer = document.createElement('span');
+  valueContainer.className = 'value-container';
 
   const btn = document.createElement('button');
   btn.textContent = '✕';
-  pill.append(btn);
+  btn.className = 'remove-btn';
+
+  const updateValueControls = () => {
+    valueContainer.innerHTML = '';
+    const selectedAction = ACTIONS.find(a => a.id === asel.value);
+
+    if (!selectedAction?.hasValue) {
+      actionMap[gesture].value = null;
+      updateActionMap();
+      return;
+    }
+
+    const vInput = document.createElement('input');
+    vInput.type = 'text';
+    vInput.className = 'value-input';
+    vInput.placeholder = selectedAction.placeholder || '...';
+    vInput.addEventListener('input', () => {
+      actionMap[gesture].value = vInput.value;
+      updateActionMap();
+    });
+
+    if (selectedAction.predefinedValues) {
+      const psel = document.createElement('select');
+      psel.className = 'predefined-select';
+
+      selectedAction.predefinedValues.forEach(pv => {
+        const o = document.createElement('option');
+        o.value = pv.value;
+        o.textContent = pv.name;
+        psel.append(o);
+      });
+
+      const customOption = document.createElement('option');
+      customOption.value = 'custom';
+      customOption.textContent = selectedAction.customValueLabel || 'Custom...';
+      psel.append(customOption);
+
+      valueContainer.append(psel);
+
+      psel.addEventListener('change', () => {
+        if (psel.value === 'custom') {
+          vInput.style.display = 'inline-block';
+          actionMap[gesture].value = '';
+          vInput.value = '';
+          vInput.focus();
+        } else {
+          vInput.style.display = 'none';
+          actionMap[gesture].value = psel.value;
+        }
+        updateActionMap();
+      });
+    }
+
+    valueContainer.append(vInput);
+
+    const isCustom = !selectedAction.predefinedValues ||
+                     !selectedAction.predefinedValues.some(pv => pv.value === actionObj.value);
+
+    if (selectedAction.predefinedValues) {
+      const psel = valueContainer.querySelector('.predefined-select');
+      if(psel) psel.value = isCustom ? 'custom' : actionObj.value;
+    }
+
+    vInput.style.display = isCustom ? 'inline-block' : 'none';
+    if(actionObj.value) vInput.value = actionObj.value;
+  };
 
   gsel.addEventListener('change', () => {
     delete actionMap[gesture];
     gesture = gsel.value;
-    actionMap[gesture] = asel.value;
-    updateActionMap();
+    actionMap[gesture] = actionObj;
+    updateActionMap().then(handleActionMapUI);
   });
+
   asel.addEventListener('change', () => {
-    actionMap[gesture] = asel.value;
+    actionObj.id = asel.value;
+    const newAction = ACTIONS.find(a => a.id === asel.value);
+    actionObj.value = newAction.predefinedValues ? newAction.predefinedValues[0].value : null;
+    updateValueControls();
     updateActionMap();
   });
+
   btn.addEventListener('click', () => {
     delete actionMap[gesture];
     pill.remove();
     updateActionMap();
   });
 
+  pill.append(gsel);
+  pill.append(document.createTextNode(' → '));
+  pill.append(asel);
+  pill.append(valueContainer);
+  pill.append(btn);
+
+  updateValueControls();
   return pill;
 }
 
@@ -59,16 +134,18 @@ function handleActionMapUI() {
   const container = document.getElementById('action-map-container');
   container.innerHTML = '';
 
-  Object.entries(actionMap).forEach(([gesture, action]) => {
-    container.append(createMappingPill(gesture, action));
+  Object.entries(actionMap).forEach(([gesture, actionObj]) => {
+    const validActionObj = (typeof actionObj === 'string')
+      ? { id: actionObj, value: null }
+      : actionObj;
+    container.append(createMappingPill(gesture, validActionObj));
   });
 
   document.getElementById('add-mapping').onclick = () => {
     const used = new Set(Object.keys(actionMap));
     const free = GESTURES.find(g => !used.has(g)) || GESTURES[0];
-    actionMap[free] = ACTIONS[0].id;
+    actionMap[free] = { id: ACTIONS[0].id, value: null };
     updateActionMap();
-
     handleActionMapUI();
   };
 }

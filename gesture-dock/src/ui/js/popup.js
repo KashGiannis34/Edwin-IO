@@ -1,7 +1,7 @@
 const cameraToggle = document.getElementById('recognition-toggle');
 const mirrorToggle = document.getElementById('mirror-toggle');
 
-chrome.storage.sync.get('recognitionActive', (data) => {
+chrome.storage.local.get('recognitionActive', (data) => {
   cameraToggle.checked = !!data.recognitionActive;
 });
 
@@ -12,7 +12,7 @@ chrome.storage.sync.get('mirrorEnabled', (data) => {
 cameraToggle.addEventListener('change', () => {
   const isActive = cameraToggle.checked;
 
-  chrome.storage.sync.set({ recognitionActive: isActive });
+  chrome.storage.local.set({ recognitionActive: isActive });
 
   chrome.runtime.sendMessage({ type: 'toggle-recognition', isActive });
 });

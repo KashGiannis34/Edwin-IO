@@ -12,12 +12,12 @@ async function triggerAction(gesture) {
   const actionMap = data.actionMap;
   if (!actionMap) return;
 
-  const actionId = actionMap[gesture];
-  if (!actionId) return;
+  const actionObj = actionMap[gesture];
+  if (!actionObj || !actionObj.id) return;
 
-  const handler = ACTION_HANDLERS[actionId];
-  console.log(`Performing action: ${actionId}`);
-  if (handler) handler().catch(console.error);
+  const handler = ACTION_HANDLERS[actionObj.id];
+  console.log(`Performing action: ${actionObj.id}`);
+  if (handler) handler(actionObj.value).catch(console.error);
   return;
 }
 

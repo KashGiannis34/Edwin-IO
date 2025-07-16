@@ -181,5 +181,11 @@ chrome.runtime.onMessage.addListener(async (message) => {
   }
 });
 
+chrome.runtime.onStartup.addListener(async () => {
+  console.log("Browser has started. Setting 'recognitionActive' to false.");
+
+  await chrome.storage.local.set({ recognitionActive: false });
+});
+
 chrome.storage.onChanged.addListener(updateOptions);
 updateOptions();
