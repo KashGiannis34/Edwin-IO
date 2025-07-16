@@ -18,7 +18,7 @@ cameraToggle.addEventListener('change', () => {
 });
 
 mirrorToggle.addEventListener('change', () => {
-  const isActive = cameraToggle.checked;
+  const isActive = mirrorToggle.checked;
 
   chrome.storage.sync.set({ mirrorEnabled: isActive });
 

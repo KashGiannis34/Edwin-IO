@@ -1,6 +1,7 @@
 import { GESTURES, ACTIONS, DEFAULT_ACTION_MAP } from './actionMap.js';
 import * as tf from '@tensorflow/tfjs';
 import * as handpose from '@tensorflow-models/handpose';
+import { getFilteredHands } from '../../core/gestureUtils.js';
 
 // ACTION MAP UI CODE
 let actionMap = {};
@@ -92,6 +93,7 @@ async function initActionMap(defaultVal, extraActions) {
 const video = document.getElementById("webcam");
 const gestureArea = document.getElementById("gesture-area");
 const gestureOutput = document.getElementById("gesture-output");
+const videoWrapper = document.getElementById("video-wrapper");
 
 const displayCanvas = document.getElementById("output-canvas");
 const displayCtx = displayCanvas.getContext("2d");
@@ -103,6 +105,17 @@ let animationFrameId = null;
 let handposeModel = null;
 
 const port = chrome.runtime.connect({ name: "options-page" });
+
+async function updateMirror() {
+  const data = await chrome.storage.sync.get(['mirrorEnabled']);
+  const mirrorEnabled = data.mirrorEnabled ?? false;
+
+  console.log("Mirror setting updated:", mirrorEnabled);
+
+  if (gestureArea.style.display === 'none') return;
+
+  videoWrapper.classList.toggle('mirror', mirrorEnabled);
+}
 
 async function setupHandposeModel() {
   if (handposeModel) return;
@@ -118,6 +131,7 @@ async function startLocalCamera() {
     gestureArea.style.display = 'block';
     gestureOutput.textContent = "Loading model...";
 
+    await updateMirror();
     await setupHandposeModel();
 
     gestureOutput.textContent = "Starting camera...";
@@ -189,7 +203,7 @@ async function renderLoop() {
   if (!localStream?.active || !handposeModel) return;
 
   // Detect hands first
-  const predictions = await handposeModel.estimateHands(video);
+  const predictions = await getFilteredHands(handposeModel, video);
   latestLandmarks = predictions.length > 0 ? predictions[0].landmarks : null;
 
   // Draw video and landmarks
@@ -209,6 +223,8 @@ async function renderLoop() {
 }
 
 // LISTENERS
+chrome.storage.onChanged.addListener(updateMirror);
+
 document.addEventListener('DOMContentLoaded', async () => {
   await initActionMap(DEFAULT_ACTION_MAP, handleActionMapUI);
   stopLocalCamera();

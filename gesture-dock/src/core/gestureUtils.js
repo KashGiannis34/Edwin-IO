@@ -75,7 +75,6 @@ export function normalizeLandmarks(landmarks) {
     .reduce((a, b) => a + b, 0) / mcpIndices.length || 1;
 
   const scaled = rotated.map(([x, y]) => [x / avgDist, y / avgDist]);
-  console.log("Normalized landmarks:", scaled.flat());
   return scaled.flat();
 }
 
@@ -116,8 +115,6 @@ export async function classifyGesture(normalized, model, tf) {
 }
 
 export async function detectGesture(landmarks, model, tf) {
-  console.log("Pure landmark: ", landmarks);
-  console.log("Landmark array for gesture detection:", landmarks);
   const normalized = normalizeLandmarks(landmarks);
   const res = await classifyGesture(normalized, model, tf);
   return res;

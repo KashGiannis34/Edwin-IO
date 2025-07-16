@@ -1,5 +1,5 @@
 import * as tf from '@tensorflow/tfjs';
-import { getFilteredHands, updateStableGesture, detectGesture, getPointingDirection, getStableGesture } from './gestureUtils.js';
+import { updateStableGesture, detectGesture, getPointingDirection, getStableGesture } from './gestureUtils.js';
 
 let gestureModel = null;
 let optionsPort = null;
@@ -11,15 +11,12 @@ let activeCameraSource = 'none';
 let isCreatingOffscreenDocument = false;
 let isClosingOffscreenDocument = false;
 
-async function initializeOptions() {
+async function updateOptions() {
   const data = await chrome.storage.sync.get(['mirrorEnabled', 'actionMap']);
   currentOptions.mirrorEnabled = data.mirrorEnabled ?? false;
   currentOptions.actionMap = data.actionMap;
   console.log("Options initialized/updated:", currentOptions);
 }
-
-chrome.storage.onChanged.addListener(initializeOptions);
-initializeOptions();
 
 async function setupModels() {
   if (gestureModel) return;
@@ -183,3 +180,6 @@ chrome.runtime.onMessage.addListener(async (message) => {
       break;
   }
 });
+
+chrome.storage.onChanged.addListener(updateOptions);
+updateOptions();

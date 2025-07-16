@@ -1,5 +1,6 @@
 import * as tf from '@tensorflow/tfjs';
 import * as handpose from '@tensorflow-models/handpose';
+import { getFilteredHands } from '../../core/gestureUtils';
 
 const video = document.getElementById('webcam');
 let handposeModel = null;
@@ -39,7 +40,7 @@ async function sendLandmarksLoop() {
     return;
   }
 
-  const predictions = await handposeModel.estimateHands(video);
+  const predictions = await getFilteredHands(handposeModel, video);
   const landmarks = predictions.length > 0 ? predictions[0].landmarks : null;
 
   chrome.runtime.sendMessage({

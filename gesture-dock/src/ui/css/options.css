@@ -75,7 +75,7 @@ h1 {
   text-align: center;
 }
 
-.video-wrapper {
+#video-wrapper {
   position: relative;
   width: 640px;
   height: 480px;
@@ -85,8 +85,8 @@ h1 {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-.video-wrapper video,
-.video-wrapper #output-canvas {
+#video-wrapper video,
+#video-wrapper #output-canvas {
   position: absolute;
   top: 0;
   left: 0;
@@ -94,10 +94,10 @@ h1 {
   height: 100%;
 }
 
-.video-wrapper #output-canvas {
+#video-wrapper #output-canvas {
   z-index: 10;
 }
 
-#processing-canvas {
-  display: none;
+#video-wrapper.mirror {
+  transform: scaleX(-1);
 }
