@@ -11,6 +11,7 @@ function createMappingPill(gesture, actionObj) {
   pill.className = 'mapping-pill';
 
   const gsel = document.createElement('select');
+  gsel.classList.add('dropdown-arrow');
   GESTURES.forEach(g => {
     const o = document.createElement('option');
     o.value = g; o.textContent = g;
@@ -19,6 +20,7 @@ function createMappingPill(gesture, actionObj) {
   });
 
   const asel = document.createElement('select');
+  asel.classList.add('dropdown-arrow');
   ACTIONS.forEach(a => {
     const o = document.createElement('option');
     o.value = a.id;
@@ -44,7 +46,11 @@ function createMappingPill(gesture, actionObj) {
       return;
     }
 
+    const isCustom = !selectedAction.predefinedValues ||
+                     !selectedAction.predefinedValues.some(pv => pv.value === actionObj.value);
+    console.log("Is custom: ", isCustom);
     const vInput = document.createElement('input');
+
     vInput.type = 'text';
     vInput.className = 'value-input';
     vInput.placeholder = selectedAction.placeholder || '...';
@@ -54,8 +60,11 @@ function createMappingPill(gesture, actionObj) {
     });
 
     if (selectedAction.predefinedValues) {
+      vInput.classList.add('dropdown-arrow');
+
       const psel = document.createElement('select');
       psel.className = 'predefined-select';
+      psel.classList.add('dropdown-arrow');
 
       selectedAction.predefinedValues.forEach(pv => {
         const o = document.createElement('option');
@@ -74,21 +83,34 @@ function createMappingPill(gesture, actionObj) {
       psel.addEventListener('change', () => {
         if (psel.value === 'custom') {
           vInput.style.display = 'inline-block';
-          actionMap[gesture].value = '';
-          vInput.value = '';
+          if (actionObj.id == 'openPage') {
+            vInput.value = 'https://';
+          } else {
+            vInput.value = '';
+          }
+          actionMap[gesture].value = vInput.value;
           vInput.focus();
         } else {
+          vInput.classList.toggle('focus-outline', false);
           vInput.style.display = 'none';
           actionMap[gesture].value = psel.value;
         }
-        updateActionMap();
+        updateActionMap().then(handleActionMapUI);
       });
+
+      if (isCustom) {
+        const vInputButton = document.createElement('button');
+
+        vInputButton.className = 'value-select-overlay';
+        vInputButton.addEventListener('click', () => {
+          psel.showPicker();
+          vInput.classList.toggle('focus-outline', true);
+        });
+        valueContainer.append(vInputButton);
+      }
     }
 
     valueContainer.append(vInput);
-
-    const isCustom = !selectedAction.predefinedValues ||
-                     !selectedAction.predefinedValues.some(pv => pv.value === actionObj.value);
 
     if (selectedAction.predefinedValues) {
       const psel = valueContainer.querySelector('.predefined-select');
@@ -144,6 +166,7 @@ function handleActionMapUI() {
   document.getElementById('add-mapping').onclick = () => {
     const used = new Set(Object.keys(actionMap));
     const free = GESTURES.find(g => !used.has(g)) || GESTURES[0];
+
     actionMap[free] = { id: ACTIONS[0].id, value: null };
     updateActionMap();
     handleActionMapUI();

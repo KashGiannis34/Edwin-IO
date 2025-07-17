@@ -67,12 +67,15 @@ h1 {
   background-color: var(--input-bg);
   transition: all var(--transition-speed) ease;
   cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.dropdown-arrow {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2.5' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m19.5 8.25-7.5 7.5-7.5-7.5' /%3E%3C/svg%3E");
   background-position: right 0.5rem center;
   background-repeat: no-repeat;
   background-size: 1.25em 1.25em;
-  width: 100%;
-  box-sizing: border-box;
 }
 
 .mapping-pill input {
@@ -91,9 +94,17 @@ h1 {
   box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
 }
 
+input.focus-outline {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
 .value-container {
   position: relative;
   min-height: 42px;
+  display: flex;
+  align-items: center;
 }
 
 .value-container > .predefined-select,
@@ -104,6 +115,7 @@ h1 {
   opacity: 1;
   visibility: visible;
   transition: all var(--transition-speed) ease-in-out;
+  z-index: 0;
 }
 
 .value-container > .hidden {
@@ -112,9 +124,22 @@ h1 {
   pointer-events: none;
 }
 
+.value-select-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 45px;
+  background: transparent;
+  border: none !important;
+  font-size:0;
+  z-index: 5;
+  cursor: pointer;
+}
+
 .remove-btn {
-  background: #fde2e2;
-    color: #c53030;
+  background: transparent;
+  color: #a1a1aa;
   border: none;
   cursor: pointer;
   font-weight: bold;
@@ -177,7 +202,7 @@ h1 {
 }
 
 #video-wrapper #output-canvas {
-  z-index: 10;
+  z-index: 5;
 }
 
 #video-wrapper.mirror {
