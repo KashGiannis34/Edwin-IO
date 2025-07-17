@@ -48,7 +48,6 @@ function createMappingPill(gesture, actionObj) {
 
     const isCustom = !selectedAction.predefinedValues ||
                      !selectedAction.predefinedValues.some(pv => pv.value === actionObj.value);
-    console.log("Is custom: ", isCustom);
     const vInput = document.createElement('input');
 
     vInput.type = 'text';
@@ -73,10 +72,12 @@ function createMappingPill(gesture, actionObj) {
         psel.append(o);
       });
 
-      const customOption = document.createElement('option');
-      customOption.value = 'custom';
-      customOption.textContent = selectedAction.customValueLabel || 'Custom...';
-      psel.append(customOption);
+      if (selectedAction.customValueLabel) {
+        const customOption = document.createElement('option');
+        customOption.value = 'custom';
+        customOption.textContent = selectedAction.customValueLabel;
+        psel.append(customOption);
+      }
 
       valueContainer.append(psel);
 

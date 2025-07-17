@@ -15,17 +15,51 @@ export const GESTURES = [
 ];
 
 export const ACTIONS = [
-  // --- Simple Actions ---
-  { id: "newTab",         name: "Open New Tab" },
-  { id: "closeTab",       name: "Close Current Tab" },
   { id: "reloadPage",     name: "Reload Page" },
-  { id: "goBack",         name: "Go Back" },
-  { id: "goForward",      name: "Go Forward" },
-  { id: "nextTab",        name: "Switch to Next Tab" },
-  { id: "previousTab",    name: "Switch to Previous Tab" },
   { id: "openDashboard",  name: "Open Extension Dashboard" },
-
-  // --- Custom Actions with Predefined Values ---
+  {
+    id: "manageTab",
+    name: "Manage Tab...",
+    hasValue: true,
+    predefinedValues: [
+      { name: "New Tab", value: "new" },
+      { name: "Close Current Tab", value: "close" },
+      { name: "Duplicate Current Tab", value: "duplicate" },
+      { name: "Toggle Pin", value: "pin" }
+    ]
+  },
+  {
+    id: "switchTab",
+    name: "Switch Tab...",
+    hasValue: true,
+    customValueLabel: "By Title/URL...",
+    predefinedValues: [
+      { name: "Next Tab", value: "next" },
+      { name: "Previous Tab", value: "previous" }
+    ],
+    placeholder: "e.g., YouTube"
+  },
+  {
+    id: "navigateHistory",
+    name: "Navigate History...",
+    hasValue: true,
+    predefinedValues: [
+      { name: "Go Back", value: "back" },
+      { name: "Go Forward", value: "forward" }
+    ]
+  },
+  {
+    id: "controlZoom",
+    name: "Control Zoom...",
+    hasValue: true,
+    customValueLabel: "Set %/Change by %...",
+    predefinedValues: [
+      { name: "Zoom In (+10%)", value: "+10" },
+      { name: "Zoom Out (-10%)", value: "-10" },
+      { name: "Reset (100%)", value: "100" }
+    ],
+    placeholder: "e.g., 80 (set) or +20 (change)"
+  },
   {
     id: "openPage",
     name: "Open Page...",
@@ -49,23 +83,33 @@ export const ACTIONS = [
         { name: "Page Up", value: "-90" },
         { name: "Half Page Down", value: "50" },
         { name: "Half Page Up", value: "-50" }
+    ],
+    placeholder: "e.g., -10"
+  },
+  {
+    id: "muteControl",
+    name: "Mute/Unmute Tab...",
+    hasValue: true,
+    // No customValueLabel, so no "Custom..." option will appear
+    predefinedValues: [
+      { name: "Toggle Mute/Unmute", value: "toggle" },
+      { name: "Force Mute", value: "mute" },
+      { name: "Force Unmute", value: "unmute" }
     ]
   },
   {
-    id: "setZoom",
-    name: "Set Zoom to %...",
+    id: "moveTab",
+    name: "Move Tab...",
     hasValue: true,
-    customValueLabel: "Custom %...",
+    customValueLabel: "To Position...",
     predefinedValues: [
-        { name: "Zoom In (125%)", value: "125" },
-        { name: "Zoom Out (75%)", value: "75" },
-        { name: "Reset Zoom (100%)", value: "100" }
-    ]
-  },
-
-  // --- Custom Actions with Text Input Only ---
-  { id: "findTab",        name: "Switch to Tab...",      hasValue: true, placeholder: "e.g., YouTube" },
-  { id: "execScript",     name: "Execute Script...",     hasValue: true, placeholder: "alert('hello')" },
+        { name: "Move to Start", value: "start" },
+        { name: "Move to End", value: "end" },
+        { name: "Move One Left", value: "left" },
+        { name: "Move One Right", value: "right" }
+    ],
+    placeholder: "e.g., 3"
+  }
 ];
 
 export const DEFAULT_ACTION_MAP = {
