@@ -43,6 +43,10 @@
       font-size: 1rem;
       color: #333;
     }
+
+    .video-wrapper {
+      transform: scaleX(-1);
+    }
   </style>
 </head>
 <body>
@@ -53,9 +57,8 @@
   </div>
   <button id="start-button">Enable Camera</button>
 
-  <video id="webcam" autoplay playsinline style="display: none;"></video>
-
   <div class="video-wrapper">
+    <video id="webcam" autoplay playsinline style="display: none;"></video>
     <canvas id="output-canvas" width="320" height="240"></canvas>
   </div>
 

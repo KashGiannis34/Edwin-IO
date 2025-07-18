@@ -5,7 +5,7 @@ let stableGesture = 'None';
 let lastGestureTime = 0;
 const labelMapUrl = `${chrome.runtime.getURL('core/model/label_mapping.json')}?t=${Date.now()}`;
 const labelMapPromise = fetch(labelMapUrl).then(res => res.json());
-const GESTURE_HOLD_TIME = 100;
+const GESTURE_HOLD_TIME = 500;
 
 async function triggerAction(gesture) {
   const data = await chrome.storage.sync.get('actionMap');
@@ -27,9 +27,9 @@ export function updateStableGesture(gesture) {
   if (gesture !== lastGesture) {
     lastGesture = gesture;
     lastGestureTime = now;
-  } else if (now - lastGestureTime >= GESTURE_HOLD_TIME && gesture !== stableGesture) {
+  } else if (now - lastGestureTime >= GESTURE_HOLD_TIME) {
     stableGesture = gesture;
-    console.log(`Stable gesture updated: ${stableGesture}`);
+    lastGestureTime = now;
     triggerAction(stableGesture);
   }
 }
@@ -111,6 +111,10 @@ export async function classifyGesture(normalized, model, tf) {
 
   const labelMap = await labelMapPromise;
   const predictedGesture = labelMap[predictedIndex];
+
+  inputTensor.dispose();
+  prediction.dispose();
+
   return predictedGesture;
 }
 

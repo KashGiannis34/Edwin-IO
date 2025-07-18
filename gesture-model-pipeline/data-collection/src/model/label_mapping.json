@@ -1,10 +1,11 @@
 {
-  "0": "Surfer",
-  "1": "Three",
-  "2": "Four",
-  "3": "Two",
-  "4": "Point",
-  "5": "Open Hand",
-  "6": "Thumb Point",
-  "7": "None"
+  "0": "None",
+  "1": "Open Hand",
+  "2": "Thumb Point",
+  "3": "Point",
+  "4": "Surfer",
+  "5": "Zero",
+  "6": "Three",
+  "7": "Four",
+  "8": "Two"
 }

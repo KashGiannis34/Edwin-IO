@@ -162,7 +162,7 @@ chrome.runtime.onConnect.addListener(async (port) => {
 chrome.tabs.onActivated.addListener(manageCameraSource);
 chrome.windows.onFocusChanged.addListener(manageCameraSource);
 
-chrome.runtime.onMessage.addListener(async (message) => {
+chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   switch (message.type) {
     case 'landmarks':
       if (message.landmarks) {
@@ -178,12 +178,14 @@ chrome.runtime.onMessage.addListener(async (message) => {
     case 'toggle-recognition':
       await toggleRecognition(message.isActive);
       break;
+    case 'getCameraStatus':
+      const isActive = activeCameraSource !== 'none';
+      sendResponse({ isCameraActive: isActive });
+      return true;
   }
 });
 
 chrome.runtime.onStartup.addListener(async () => {
-  console.log("Browser has started. Setting 'recognitionActive' to false.");
-
   await chrome.storage.local.set({ recognitionActive: false });
 });
 

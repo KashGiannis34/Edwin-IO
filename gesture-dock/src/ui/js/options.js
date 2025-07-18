@@ -172,6 +172,14 @@ function handleActionMapUI() {
     updateActionMap();
     handleActionMapUI();
   };
+
+  document.getElementById('set-to-default').onclick = () => {
+    if (confirm("Are you sure you want to reset all mappings to their default settings?")) {
+      actionMap = { ...DEFAULT_ACTION_MAP };
+      updateActionMap();
+      handleActionMapUI();
+    }
+  };
 }
 
 async function updateActionMap() {

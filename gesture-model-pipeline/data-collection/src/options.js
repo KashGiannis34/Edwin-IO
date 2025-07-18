@@ -33,6 +33,8 @@ const GESTURE_KEYS = {
   '6': "Surfer",
   '7': "Thumb Point",
   '8': "None",
+  '9': "Rock On",
+  '0': "Zero",
   'd': "DOWNLOAD",
   'r': "RESET",
 };
