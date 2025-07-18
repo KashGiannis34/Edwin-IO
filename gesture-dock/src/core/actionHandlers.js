@@ -1,6 +1,5 @@
 export const ACTION_HANDLERS = {
-  reloadPage: async () => {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  reloadPage: async (value, tab) => {
     if (tab) await chrome.tabs.reload(tab.id);
   },
   openDashboard: async () => {
@@ -11,12 +10,19 @@ export const ACTION_HANDLERS = {
       await chrome.tabs.create({ url: value });
     }
   },
-  scrollBy: async (value) => {
+  scrollBy: async (value, tab) => {
     const percent = parseInt(value, 10);
     if (isNaN(percent)) return;
 
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tab?.url?.startsWith('chrome')) return; // Check for protected URLs
+    if (tab?.url?.startsWith('chrome') || tab.url?.startsWith('https://chromewebstore.google.com/')) {
+      chrome.notifications.create({
+        type: 'basic',
+        iconUrl: chrome.runtime.getURL('icons/icon128.png'),
+        title: 'Restricted URL',
+        message: 'The scroll action cannot be used in this page.',
+      });
+      return;
+    }
 
     if (tab) {
       chrome.scripting.executeScript({
@@ -26,8 +32,7 @@ export const ACTION_HANDLERS = {
       });
     }
   },
-  muteControl: async (value) => {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  muteControl: async (value, tab) => {
     if (!tab) return;
 
     switch (value) {
@@ -45,8 +50,7 @@ export const ACTION_HANDLERS = {
         break;
     }
   },
-  moveTab: async (value) => {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  moveTab: async (value, tab) => {
     if (!tab) return;
 
     let newIndex = -1; // Default to moving to the end
@@ -77,9 +81,7 @@ export const ACTION_HANDLERS = {
       await chrome.tabs.move(tab.id, { index: newIndex });
     }
   },
-  manageTab: async (value) => {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
+  manageTab: async (value, tab) => {
     switch (value) {
       case 'new':
         await chrome.tabs.create({});
@@ -114,9 +116,16 @@ export const ACTION_HANDLERS = {
       if (foundTab) await chrome.tabs.update(foundTab.id, { active: true });
     }
   },
-  navigateHistory: async (value) => {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tab?.url?.startsWith('chrome')) return;
+  navigateHistory: async (value, tab) => {
+    if (tab?.url?.startsWith('chrome') || tab.url?.startsWith('https://chromewebstore.google.com/')) {
+      chrome.notifications.create({
+        type: 'basic',
+        iconUrl: chrome.runtime.getURL('icons/icon128.png'),
+        title: 'Restricted URL',
+        message: 'Navigate History cannot be used in this page.',
+      });
+      return;
+    }
     if (!tab) return;
 
     // Determine which function to inject into the page
@@ -130,9 +139,16 @@ export const ACTION_HANDLERS = {
       func: funcToExecute,
     });
   },
-  controlZoom: async (value) => {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tab?.url?.startsWith('chrome://')) return;
+  controlZoom: async (value, tab) => {
+    if (tab?.url?.startsWith('chrome://') || tab.url?.startsWith('https://chromewebstore.google.com/')) {
+      chrome.notifications.create({
+        type: 'basic',
+        iconUrl: chrome.runtime.getURL('icons/icon128.png'),
+        title: 'Restricted URL',
+        message: 'Control zoom cannot be used in this page.',
+      });
+      return;
+    }
     if (!tab) return;
 
     // Check if it's a relative change (+10, -20) or absolute set (150)

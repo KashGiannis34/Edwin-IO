@@ -2,6 +2,8 @@ let lastGesture = null;
 let stableGesture = null;
 let lastGestureTime = 0;
 const GESTURE_HOLD_TIME = 100; // milliseconds
+const labelMapUrl = `${chrome.runtime.getURL('model/label_mapping.json')}?t=${Date.now()}`;
+const labelMapPromise = fetch(labelMapUrl).then(res => res.json());
 
 export function updateStableGesture(gesture) {
   const now = Date.now();
@@ -99,10 +101,25 @@ export function drawNormalizedLandmarks(ctx, normVec, width = 300, height = 300)
 export async function classifyGesture(normalized, model, tf) {
   const inputTensor = tf.tensor2d([normalized]);
   const prediction = model.predict(inputTensor);
-  const predictedIndex = prediction.argMax(-1).dataSync()[0];
 
-  const labelMap = await fetch(chrome.runtime.getURL('model/label_mapping.json')).then(res => res.json());
+  const confidences = prediction.dataSync();
+  const labelMap = await labelMapPromise;
+
+  const confidenceMap = {};
+  for (let i = 0; i < confidences.length; i++) {
+    const gestureName = labelMap[i];
+    const score = confidences[i];
+    confidenceMap[gestureName] = score;
+  }
+
+  console.log('Gesture Confidences:', confidenceMap);
+
+  const predictedIndex = prediction.argMax(-1).dataSync()[0];
   const predictedGesture = labelMap[predictedIndex];
+
+  inputTensor.dispose();
+  prediction.dispose();
+
   return predictedGesture;
 }
 

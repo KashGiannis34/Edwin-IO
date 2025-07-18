@@ -1,5 +1,5 @@
 import * as tf from '@tensorflow/tfjs';
-import { updateStableGesture, detectGesture, getPointingDirection, getStableGesture } from './gestureUtils.js';
+import { updateStableGesture, detectGesture, getPointingDirection, getStableGesture, addTabListeners } from './gestureUtils.js';
 
 let gestureModel = null;
 let optionsPort = null;
@@ -191,3 +191,4 @@ chrome.runtime.onStartup.addListener(async () => {
 
 chrome.storage.onChanged.addListener(updateOptions);
 updateOptions();
+addTabListeners();

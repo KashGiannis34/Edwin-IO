@@ -5,7 +5,21 @@ let stableGesture = 'None';
 let lastGestureTime = 0;
 const labelMapUrl = `${chrome.runtime.getURL('core/model/label_mapping.json')}?t=${Date.now()}`;
 const labelMapPromise = fetch(labelMapUrl).then(res => res.json());
-const GESTURE_HOLD_TIME = 500;
+const REPEAT_GESTURE_TIME = 800;
+const NEW_GESTURE_TIME = 500;
+let cooldownTime = NEW_GESTURE_TIME;
+let activeTab = null;
+
+export function addTabListeners() {
+  chrome.tabs.onActivated.addListener(updateActiveTab);
+  chrome.tabs.onUpdated.addListener(updateActiveTab);
+  chrome.windows.onFocusChanged.addListener(updateActiveTab);
+}
+
+async function updateActiveTab() {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  activeTab = tab;
+}
 
 async function triggerAction(gesture) {
   const data = await chrome.storage.sync.get('actionMap');
@@ -17,7 +31,7 @@ async function triggerAction(gesture) {
 
   const handler = ACTION_HANDLERS[actionObj.id];
   console.log(`Performing action: ${actionObj.id}`);
-  if (handler) handler(actionObj.value).catch(console.error);
+  if (handler) handler(actionObj.value, activeTab).catch(console.error);
   return;
 }
 
@@ -27,9 +41,12 @@ export function updateStableGesture(gesture) {
   if (gesture !== lastGesture) {
     lastGesture = gesture;
     lastGestureTime = now;
-  } else if (now - lastGestureTime >= GESTURE_HOLD_TIME) {
+    cooldownTime = NEW_GESTURE_TIME;
+
+  } else if (now - lastGestureTime >= cooldownTime) {
     stableGesture = gesture;
     lastGestureTime = now;
+    cooldownTime = REPEAT_GESTURE_TIME;
     triggerAction(stableGesture);
   }
 }

@@ -1,5 +1,6 @@
 export const GESTURES = [
   "Open Hand",
+  "Zero",
   "Two",
   "Three",
   "Four",
@@ -11,7 +12,8 @@ export const GESTURES = [
   "Thumb Point (down)",
   "Thumb Point (left)",
   "Thumb Point (right)",
-  "Surfer"
+  "Surfer",
+  "Rock On"
 ];
 
 export const ACTIONS = [
@@ -84,7 +86,7 @@ export const ACTIONS = [
         { name: "Half Page Down", value: "50" },
         { name: "Half Page Up", value: "-50" }
     ],
-    placeholder: "e.g., -10"
+    placeholder: "e.g., -10 (scroll up 10%)"
   },
   {
     id: "muteControl",

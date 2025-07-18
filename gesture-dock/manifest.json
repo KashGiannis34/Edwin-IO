@@ -8,7 +8,8 @@
     "scripting",
     "offscreen",
     "tabs",
-    "sessions"
+    "sessions",
+    "notifications"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -32,7 +33,8 @@
         "ui/offscreen.html",
         "*.wasm",
         "core/model/*.json",
-        "core/model/*.bin"
+        "core/model/*.bin",
+        "icons/*.png"
       ],
       "matches": [
         "<all_urls>"

@@ -119,8 +119,6 @@ Middle: ${fingers.middle.map(n => n.toFixed(0)).join(', ')}
 Ring: ${fingers.ring.map(n => n.toFixed(0)).join(', ')}
 Pinky: ${fingers.pinky.map(n => n.toFixed(0)).join(', ')}`;
 
-    console.log('Normalized landmarks:', normalized);
-
     chrome.runtime.sendMessage({ gesture });
   });
 }
