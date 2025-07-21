@@ -31,7 +31,6 @@
     {
       "resources": [
         "ui/offscreen.html",
-        "*.wasm",
         "core/model/*.json",
         "core/model/*.bin",
         "icons/*.png"

@@ -1,0 +1,55 @@
+body {
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+}
+
+/* New container for the side-by-side view */
+.main-display {
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+.video-container {
+  position: relative;
+  width: 640px;
+  height: 480px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+#webcam, #overlay-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: scaleX(-1);
+}
+#overlay-canvas {
+  z-index: 10;
+}
+#processing-canvas {
+  display: none;
+}
+
+.normalized-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.normalized-container h2 {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #555;
+  margin: 0 0 0.5rem 0;
+}
+#normalized-canvas {
+  border: 1px solid #ddd;
+  background-color: #f8f8f8;
+  border-radius: 8px;
+}

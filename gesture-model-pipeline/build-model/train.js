@@ -32,7 +32,7 @@ model.compile({ optimizer: 'adam', loss: 'categoricalCrossentropy', metrics: ['a
   await model.save('file://./gesture_model_tfjs');
 
   fs.writeFileSync(
-    'label_mapping.json',
+    './gesture_model_tfjs/label_mapping.json',
     JSON.stringify(Object.fromEntries(Object.entries(labelToIndex).map(([label, i]) => [i, label])), null, 2)
   );
 

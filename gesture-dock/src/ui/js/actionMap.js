@@ -115,8 +115,6 @@ export const ACTIONS = [
 ];
 
 export const DEFAULT_ACTION_MAP = {
-  "Point (left)":  { id: "switchTab", value: "previous" },
-  "Point (right)": { id: "switchTab", value: "next" },
   "Two":           { id: "manageTab", value: "new" },
   "Three":         { id: "manageTab", value: "close" },
   "Four":          { id: "reloadPage", value: null },

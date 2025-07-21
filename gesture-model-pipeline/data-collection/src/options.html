@@ -1,70 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>GestureDock Dashboard</title>
-  <link rel="stylesheet" href="styles.css" />
-  <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      min-height: 100vh;
-      padding: 2rem;
-    }
-
-    h1 {
-      margin-bottom: 0.5rem;
-    }
-
-    #start-button {
-      margin-bottom: 1rem;
-    }
-
-    .video-wrapper {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      border: 1px solid #ccc;
-      width: 320px;
-      height: 240px;
-      position: relative;
-    }
-
-    #output-canvas {
-      width: 320px;
-      height: 240px;
-    }
-
-    #gesture-output {
-      margin-top: 1rem;
-      font-size: 1rem;
-      color: #333;
-    }
-
-    .video-wrapper {
-      transform: scaleX(-1);
-    }
-  </style>
+  <title>Hand Pose Data Collection</title>
+  <link rel="stylesheet" href="options.css">
 </head>
 <body>
-  <h1>GestureDock Dashboard</h1>
+  <h1>Hand Pose Data Collection</h1>
   <div id="gesture-keys" style="margin-top: 1rem;">
     <h3>Gesture Keybinds</h3>
     <ul id="gesture-keys-list" style="list-style: none; padding-left: 0;"></ul>
   </div>
-  <button id="start-button">Enable Camera</button>
+  <p id="status-text">Click "Start" to begin</p>
+  <button id="start-button">Start</button>
 
-  <div class="video-wrapper">
-    <video id="webcam" autoplay playsinline style="display: none;"></video>
-    <canvas id="output-canvas" width="320" height="240"></canvas>
+  <div class="main-display">
+    <div class="video-container">
+      <video id="webcam" autoplay playsinline></video>
+      <canvas id="overlay-canvas"></canvas>
+      <canvas id="processing-canvas"></canvas>
+    </div>
+
+    <div class="normalized-container">
+      <h2>Normalized View</h2>
+      <canvas id="normalized-canvas" width="300" height="300"></canvas>
+    </div>
   </div>
 
-  <canvas id="normalized-canvas" width="300" height="300" style="border: 1px solid #ccc;"></canvas>
-
-  <p id="gesture-output"></p>
   <div id="sample-counts" style="margin-top: 12px; font-family: sans-serif;">
     <strong>Samples Collected:</strong>
     <ul id="sample-list"></ul>

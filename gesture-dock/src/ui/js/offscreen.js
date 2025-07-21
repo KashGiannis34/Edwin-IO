@@ -1,8 +1,11 @@
 import * as tf from '@tensorflow/tfjs';
-import * as handpose from '@tensorflow-models/handpose';
+import * as handPoseDetection from '@tensorflow-models/hand-pose-detection';
 import { getFilteredHands } from '../../core/gestureUtils';
 
 const video = document.getElementById('webcam');
+const processingCanvas = document.getElementById("processing-canvas");
+const processingCtx = processingCanvas.getContext("2d");
+
 let handposeModel = null;
 let localStream = null;
 
@@ -16,8 +19,13 @@ async function setupHandposeModel() {
   if (handposeModel) return;
   await tf.setBackend('webgl');
   await tf.ready();
-  handposeModel = await handpose.load();
-  console.log("Handpose model loaded in offscreen document.");
+  const detectorModel = handPoseDetection.SupportedModels.MediaPipeHands;
+  const detectorConfig = {
+    runtime: 'tfjs',
+    modelType: 'lite',
+  };
+  handposeModel = await handPoseDetection.createDetector(detectorModel, detectorConfig);
+  console.log("Handpose model loaded in offscreen page.");
 }
 
 async function startCamera() {
@@ -28,25 +36,34 @@ async function startCamera() {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
     localStream = stream;
     video.srcObject = stream;
+    video.onloadedmetadata = () => {
+      processingCanvas.width = video.videoWidth;
+      processingCanvas.height = video.videoHeight;
+    };
     await video.play();
-    sendLandmarksLoop();
+    console.log("Setup offscreen detection");
+    sendKeypointsLoop();
   } catch (err) {
     console.error("Error starting camera in offscreen:", err);
   }
 }
 
-async function sendLandmarksLoop() {
+async function sendKeypointsLoop() {
   if (!localStream?.active || !handposeModel) {
     return;
   }
 
-  const predictions = await getFilteredHands(handposeModel, video);
-  const landmarks = predictions.length > 0 ? predictions[0].landmarks : null;
+  processingCtx.drawImage(video, 0, 0, processingCanvas.width, processingCanvas.height);
+
+  const predictions = await getFilteredHands(handposeModel, processingCanvas);
+  const keypoints = predictions.length > 0 ? predictions[0].keypoints : null;
+
+  console.log(predictions);
 
   chrome.runtime.sendMessage({
-    type: 'landmarks',
-    landmarks: landmarks
+    type: 'keypoints',
+    keypoints: keypoints
   });
 
-  setTimeout(sendLandmarksLoop, 100);
+  setTimeout(sendKeypointsLoop, 17);
 }

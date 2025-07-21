@@ -72,16 +72,16 @@ async function closeOffscreenDocument() {
   }
 }
 
-async function processLandmarks(landmarks) {
+async function processKeypoints(keypoints) {
   if (!gestureModel) {
     console.log("Gesture model not ready.");
     return;
   }
   try {
-    let gesture = await detectGesture(landmarks, gestureModel, tf);
+    let gesture = await detectGesture(keypoints, gestureModel, tf);
 
     if (gesture === 'Point' || gesture === 'Thumb Point') {
-      const pointingDirection = getPointingDirection(landmarks, gesture, currentOptions.mirrorEnabled);
+      const pointingDirection = getPointingDirection(keypoints, gesture, currentOptions.mirrorEnabled);
       gesture += ` (${pointingDirection})`;
     }
     updateStableGesture(gesture);
@@ -89,11 +89,11 @@ async function processLandmarks(landmarks) {
     if (optionsPort) {
       optionsPort.postMessage({
         type: "gesture-data",
-        data: { gesture: getStableGesture(), landmarks }
+        data: { gesture: getStableGesture(), keypoints }
       });
     }
   } catch (error) {
-    console.error("Error processing landmarks:", error);
+    console.error("Error processing keypoints:", error);
   }
 }
 
@@ -164,14 +164,14 @@ chrome.windows.onFocusChanged.addListener(manageCameraSource);
 
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
   switch (message.type) {
-    case 'landmarks':
-      if (message.landmarks) {
-        await processLandmarks(message.landmarks);
+    case 'keypoints':
+      if (message.keypoints) {
+        await processKeypoints(message.keypoints);
       } else if (optionsPort) {
         updateStableGesture('None');
         optionsPort.postMessage({
           type: "gesture-data",
-          data: { gesture: 'None', landmarks: null }
+          data: { gesture: 'None', keypoints: null }
         });
       }
       break;

@@ -1,6 +1,6 @@
 import { GESTURES, ACTIONS, DEFAULT_ACTION_MAP } from './actionMap.js';
 import * as tf from '@tensorflow/tfjs';
-import * as handpose from '@tensorflow-models/handpose';
+import * as handPoseDetection from '@tensorflow-models/hand-pose-detection';
 import { getFilteredHands } from '../../core/gestureUtils.js';
 
 // ACTION MAP UI CODE
@@ -175,7 +175,8 @@ function handleActionMapUI() {
 
   document.getElementById('set-to-default').onclick = () => {
     if (confirm("Are you sure you want to reset all mappings to their default settings?")) {
-      actionMap = { ...DEFAULT_ACTION_MAP };
+      actionMap = DEFAULT_ACTION_MAP;
+      console.log(actionMap);
       updateActionMap();
       handleActionMapUI();
     }
@@ -204,12 +205,15 @@ const gestureArea = document.getElementById("gesture-area");
 const gestureOutput = document.getElementById("gesture-output");
 const videoWrapper = document.getElementById("video-wrapper");
 
-const displayCanvas = document.getElementById("output-canvas");
+const displayCanvas = document.getElementById("overlay-canvas");
 const displayCtx = displayCanvas.getContext("2d");
 
+const processingCanvas = document.getElementById("processing-canvas");
+const processingCtx = processingCanvas.getContext("2d");
+
 let localStream = null;
-let latestLandmarks = null;
 let lastFrameSendTime = 0;
+let noneFrameSend = true;
 let animationFrameId = null;
 let handposeModel = null;
 
@@ -218,8 +222,6 @@ const port = chrome.runtime.connect({ name: "options-page" });
 async function updateMirror() {
   const data = await chrome.storage.sync.get(['mirrorEnabled']);
   const mirrorEnabled = data.mirrorEnabled ?? false;
-
-  console.log("Mirror setting updated:", mirrorEnabled);
 
   if (gestureArea.style.display === 'none') return;
 
@@ -230,7 +232,12 @@ async function setupHandposeModel() {
   if (handposeModel) return;
   await tf.setBackend('webgl');
   await tf.ready();
-  handposeModel = await handpose.load();
+  const detectorModel = handPoseDetection.SupportedModels.MediaPipeHands;
+  const detectorConfig = {
+    runtime: 'tfjs',
+    modelType: 'full',
+  };
+  handposeModel = await handPoseDetection.createDetector(detectorModel, detectorConfig);
   console.log("Handpose model loaded in options page.");
 }
 
@@ -243,15 +250,17 @@ async function startLocalCamera() {
     await updateMirror();
     await setupHandposeModel();
 
-    gestureOutput.textContent = "Starting camera...";
+    gestureOutput.textContent = "";
     localStream = await navigator.mediaDevices.getUserMedia({ video: true });
     video.srcObject = localStream;
     video.onloadedmetadata = () => {
       displayCanvas.width = video.videoWidth;
       displayCanvas.height = video.videoHeight;
-      renderLoop();
+      processingCanvas.width = video.videoWidth;
+      processingCanvas.height = video.videoHeight;
     };
     await video.play();
+    renderLoop();
   } catch (err) {
     console.error("Could not start camera on options page:", err);
     gestureOutput.textContent = "❌ Camera access denied or unavailable.";
@@ -267,43 +276,41 @@ function stopLocalCamera() {
   video.srcObject = null;
 }
 
-function drawHand(landmarks) {
+function drawHand(keypoints, keypoints3D) {
+  // Always clear the visible overlay canvas before drawing new keypoints
   displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
-  if (!landmarks) return;
+  if (!keypoints) return;
 
   const connections = [
-    // Palm
-    [0, 1], [0, 5], [0, 17], [5, 9], [9, 13], [13, 17],
-    // Thumb
-    [1, 2], [2, 3], [3, 4],
-    // Index Finger
-    [5, 6], [6, 7], [7, 8],
-    // Middle Finger
-    [9, 10], [10, 11], [11, 12],
-    // Ring Finger
-    [13, 14], [14, 15], [15, 16],
-    // Pinky
-    [17, 18], [18, 19], [19, 20]
+    [0, 1], [1, 2], [2, 3], [3, 4], // Thumb
+    [0, 5], [5, 6], [6, 7], [7, 8], // Index
+    [0, 9], [9, 10], [10, 11], [11, 12], // Middle
+    [0, 13], [13, 14], [14, 15], [15, 16], // Ring
+    [0, 17], [17, 18], [18, 19], [19, 20], // Pinky
+    [5, 9], [9, 13], [13, 17], [0, 5] // Palm
   ];
 
   displayCtx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
   displayCtx.lineWidth = 2;
-
   for (const connection of connections) {
-    const [startIdx, endIdx] = connection;
-    const startPoint = landmarks[startIdx];
-    const endPoint = landmarks[endIdx];
-
-    displayCtx.beginPath();
-    displayCtx.moveTo(startPoint[0], startPoint[1]);
-    displayCtx.lineTo(endPoint[0], endPoint[1]);
-    displayCtx.stroke();
+    const start = keypoints[connection[0]];
+    const end = keypoints[connection[1]];
+    if (start && end) {
+      displayCtx.beginPath();
+      displayCtx.moveTo(start.x, start.y);
+      displayCtx.lineTo(end.x, end.y);
+      displayCtx.stroke();
+    }
   }
 
   displayCtx.fillStyle = '#00B6FF';
-  for (const landmark of landmarks) {
+  for (let i = 0; i < keypoints.length; i++) {
+    const keypoint = keypoints[i];
+    const keypoint3D = keypoints3D[i];
+    const radius = 4 + (keypoint3D.z * 60);
+
     displayCtx.beginPath();
-    displayCtx.arc(landmark[0], landmark[1], 4, 0, 2 * Math.PI);
+    displayCtx.arc(keypoint.x, keypoint.y, Math.max(1, radius), 0, 2 * Math.PI);
     displayCtx.fill();
   }
 }
@@ -311,23 +318,43 @@ function drawHand(landmarks) {
 async function renderLoop() {
   if (!localStream?.active || !handposeModel) return;
 
-  // Detect hands first
-  const predictions = await getFilteredHands(handposeModel, video);
-  latestLandmarks = predictions.length > 0 ? predictions[0].landmarks : null;
-
-  // Draw video and landmarks
-  displayCtx.drawImage(video, 0, 0, displayCanvas.width, displayCanvas.height);
-  drawHand(latestLandmarks);
-
-  // Send landmark data at a throttled rate
-  const now = performance.now();
-  if (now - lastFrameSendTime > 17) {
-    lastFrameSendTime = now;
-    chrome.runtime.sendMessage({
-      type: 'landmarks',
-      landmarks: latestLandmarks
-    });
+  if (video.readyState < 2) {
+    requestAnimationFrame(renderLoop);
+    return;
   }
+
+  processingCtx.drawImage(video, 0, 0, processingCanvas.width, processingCanvas.height);
+
+  // Detect hands first
+  const predictions = await getFilteredHands(handposeModel, processingCanvas);
+  const now = performance.now();
+
+  if (predictions.length > 0) {
+    const latestKeypoints = predictions[0].keypoints;
+    const keypoints3D = predictions[0].keypoints3D;
+
+    drawHand(latestKeypoints, keypoints3D);
+
+    if (now - lastFrameSendTime > 17) {
+      lastFrameSendTime = now;
+      chrome.runtime.sendMessage({
+        type: 'keypoints',
+        keypoints: latestKeypoints
+      });
+      noneFrameSend = false;
+    }
+  } else {
+    drawHand(null);
+    if (now - lastFrameSendTime > 600 && !noneFrameSend) {
+      lastFrameSendTime = now;
+      chrome.runtime.sendMessage({
+        type: 'keypoints',
+        keypoints: null
+      });
+      noneFrameSend = true;
+    }
+  }
+
   animationFrameId = requestAnimationFrame(renderLoop);
 }
 

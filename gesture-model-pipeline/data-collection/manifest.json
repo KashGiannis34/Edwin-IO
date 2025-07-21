@@ -1,28 +1,18 @@
 {
   "manifest_version": 3,
-  "name": "Gesture Control",
+  "name": "Simple Hand Tester",
   "version": "1.0",
-  "description": "Control your browser with hand gestures.",
-  "permissions": ["scripting", "storage", "activeTab"],
-  "host_permissions": ["<all_urls>"],
+  "options_page": "options.html",
   "action": {
-    "default_popup": "popup.html",
-    "default_icon": {
-      "128": "icons/icon128.png"
-    }
+    "default_title": "Open Hand Tester"
   },
   "background": {
-    "service_worker": "background.js",
-    "type": "module"
-  },
-  "options_page": "options.html",
-  "icons": {
-    "128": "icons/icon128.png"
+    "service_worker": "background.js"
   },
   "web_accessible_resources": [
     {
-      "resources": ["*.wasm", "model/*.json", "model/*.bin"],
-      "matches": ["<all_urls>"]
+      "resources": [ "model/*" ],
+      "matches": [ "<all_urls>" ]
     }
   ]
 }

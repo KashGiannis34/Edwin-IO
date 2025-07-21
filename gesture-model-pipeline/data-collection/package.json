@@ -1,21 +1,20 @@
 {
-  "name": "gesture-control",
+  "name": "hand-detection-test",
   "version": "1.0.0",
-  "description": "Control your browser with hand gestures using your webcam.",
-  "author": "",
-  "license": "ISC",
+  "description": "A barebones test for hand-pose-detection.",
+  "source": "src/options.html",
   "scripts": {
-    "dev": "parcel src/options.html src/popup.html src/background.js --dist-dir dist --no-source-maps --no-content-hash",
-    "build": "parcel build src/options.html src/popup.html src/background.js --dist-dir dist --no-content-hash && cp manifest.json dist/ && cp -r icons dist/icons && cp -r src/model dist/model",
-    "export": "cp -r dist/* /mnt/c/Users/akash/Desktop/gesture-extension"
+    "start": "parcel",
+    "build": "rm -rf dist/* && parcel build src/options.html src/background.js && cp manifest.json dist/ && cp -r src/model dist/model",
+    "export": "rm -rf /mnt/c/Users/akash/Desktop/gesture-extension/* && cp -r dist/* /mnt/c/Users/akash/Desktop/gesture-extension"
   },
   "dependencies": {
-    "@tensorflow-models/handpose": "^0.1.0",
-    "@tensorflow/tfjs": "^4.22.0"
+    "@tensorflow-models/hand-pose-detection": "^2.0.1",
+    "@tensorflow/tfjs": "^4.11.0"
   },
   "devDependencies": {
     "buffer": "^6.0.3",
-    "parcel": "^2.15.4",
+    "parcel": "^2.9.3",
     "process": "^0.11.10"
   }
 }

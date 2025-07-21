@@ -5,12 +5,12 @@
   "author": "",
   "license": "ISC",
   "scripts": {
-    "build": "rm -rf dist && parcel build src/ui/options.html src/ui/popup.html src/core/background.js src/ui/offscreen.html --dist-dir dist --no-content-hash && cp manifest.json dist/ && cp -r icons dist/ && mkdir -p dist/core && cp -r src/core/model dist/core",
-    "export": "cp -r dist/* /mnt/c/Users/akash/Desktop/gesture-dock"
+    "build": "rm -rf dist/* && parcel build src/ui/options.html src/ui/popup.html src/core/background.js src/ui/offscreen.html --dist-dir dist --no-content-hash && cp manifest.json dist/ && cp -r icons dist/ && mkdir -p dist/core && cp -r src/core/model dist/core",
+    "export": "rm -rf /mnt/c/Users/akash/Desktop/gesture-dock/* && cp -r dist/* /mnt/c/Users/akash/Desktop/gesture-dock"
   },
   "dependencies": {
-    "@tensorflow-models/handpose": "^0.1.0",
-    "@tensorflow/tfjs": "^4.22.0"
+    "@tensorflow-models/hand-pose-detection": "^2.0.1",
+    "@tensorflow/tfjs": "^4.11.0"
   },
   "devDependencies": {
     "buffer": "^6.0.3",

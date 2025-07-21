@@ -235,8 +235,8 @@ h1 {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-#video-wrapper video,
-#video-wrapper #output-canvas {
+#webcam,
+#overlay-canvas {
   position: absolute;
   top: 0;
   left: 0;
@@ -244,10 +244,14 @@ h1 {
   height: 100%;
 }
 
-#video-wrapper #output-canvas {
-  z-index: 5;
-}
-
 #video-wrapper.mirror {
   transform: scaleX(-1);
+}
+
+#overlay-canvas {
+  z-index: 10;
+}
+
+#processing-canvas {
+  display: none;
 }
