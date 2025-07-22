@@ -8,7 +8,6 @@
     "scripting",
     "offscreen",
     "tabs",
-    "sessions",
     "notifications"
   ],
   "host_permissions": [

@@ -260,7 +260,7 @@ async function startLocalCamera() {
     renderLoop();
   } catch (err) {
     console.error("Could not start camera on options page:", err);
-    gestureOutput.textContent = "❌ Camera access denied or unavailable.";
+    gestureOutput.textContent = "";
   }
 }
 

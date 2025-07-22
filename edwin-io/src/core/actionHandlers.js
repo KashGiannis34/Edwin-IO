@@ -8,14 +8,30 @@ export const ACTION_HANDLERS = {
   openPage: async (value) => {
     if (value && typeof value === 'string') {
       await chrome.tabs.create({ url: value });
+    } else {
+      chrome.notifications.create('InvalidURL', {
+        type: 'basic',
+        iconUrl: chrome.runtime.getURL('icons/icon128.png'),
+        title: 'Invalid Custom Value',
+        message: 'You must enter a valid URL (ex: https://google.com) for the controlZoom action.',
+      });
+      return;
     }
   },
   scrollBy: async (value, tab) => {
     const percent = parseInt(value, 10);
-    if (isNaN(percent)) return;
+    if (isNaN(percent)) {
+      chrome.notifications.create('InvalidScroll', {
+        type: 'basic',
+        iconUrl: chrome.runtime.getURL('icons/icon128.png'),
+        title: 'Invalid Custom Value',
+        message: 'You must enter a number for the scrollBy action.',
+      });
+      return;
+    }
 
     if (tab?.url?.startsWith('chrome') || tab.url?.startsWith('https://chromewebstore.google.com/')) {
-      chrome.notifications.create({
+      chrome.notifications.create('RestrictedURL', {
         type: 'basic',
         iconUrl: chrome.runtime.getURL('icons/icon128.png'),
         title: 'Restricted URL',
@@ -113,12 +129,21 @@ export const ACTION_HANDLERS = {
         t.title.toLowerCase().includes(value.toLowerCase()) ||
         t.url.toLowerCase().includes(value.toLowerCase())
       );
-      if (foundTab) await chrome.tabs.update(foundTab.id, { active: true });
+      if (foundTab) {
+        await chrome.tabs.update(foundTab.id, { active: true });
+      } else {
+        chrome.notifications.create('NoTabFound', {
+          type: 'basic',
+          iconUrl: chrome.runtime.getURL('icons/icon128.png'),
+          title: 'Tab Not Found',
+          message: 'There is no currently opened tab that matches your query.',
+        });
+      }
     }
   },
   navigateHistory: async (value, tab) => {
     if (tab?.url?.startsWith('chrome') || tab.url?.startsWith('https://chromewebstore.google.com/')) {
-      chrome.notifications.create({
+      chrome.notifications.create('RestrictedURL', {
         type: 'basic',
         iconUrl: chrome.runtime.getURL('icons/icon128.png'),
         title: 'Restricted URL',
@@ -141,7 +166,7 @@ export const ACTION_HANDLERS = {
   },
   controlZoom: async (value, tab) => {
     if (tab?.url?.startsWith('chrome://') || tab.url?.startsWith('https://chromewebstore.google.com/')) {
-      chrome.notifications.create({
+      chrome.notifications.create('RestrictedURL', {
         type: 'basic',
         iconUrl: chrome.runtime.getURL('icons/icon128.png'),
         title: 'Restricted URL',
@@ -154,12 +179,28 @@ export const ACTION_HANDLERS = {
     // Check if it's a relative change (+10, -20) or absolute set (150)
     if (value.startsWith('+') || value.startsWith('-')) {
       const percentChange = parseInt(value, 10);
-      if (isNaN(percentChange)) return;
+      if (isNaN(percentChange)) {
+        chrome.notifications.create('InvalidControlZoom', {
+          type: 'basic',
+          iconUrl: chrome.runtime.getURL('icons/icon128.png'),
+          title: 'Invalid Custom Value',
+          message: 'You must enter a number for the controlZoom action.',
+        });
+        return;
+      }
       const currentZoom = await chrome.tabs.getZoom(tab.id);
       await chrome.tabs.setZoom(tab.id, currentZoom + (percentChange / 100));
     } else {
       const percentSet = parseInt(value, 10);
-      if (isNaN(percentSet)) return;
+      if (isNaN(percentChange)) {
+        chrome.notifications.create('InvalidControlZoom', {
+          type: 'basic',
+          iconUrl: chrome.runtime.getURL('icons/icon128.png'),
+          title: 'Invalid Custom Value',
+          message: 'You must enter a number for the controlZoom action.',
+        });
+        return;
+      }
       await chrome.tabs.setZoom(tab.id, percentSet / 100);
     }
   },
