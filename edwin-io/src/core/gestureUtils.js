@@ -1,3 +1,4 @@
+import { DEFAULT_ACTION_MAP } from "../ui/js/actionMap";
 import { ACTION_HANDLERS } from "./actionHandlers";
 
 let lastGesture = 'None';
@@ -23,14 +24,12 @@ async function updateActiveTab() {
 
 async function triggerAction(gesture) {
   const data = await chrome.storage.sync.get('actionMap');
-  const actionMap = data.actionMap;
-  if (!actionMap) return;
+  const actionMap = data.actionMap ?? DEFAULT_ACTION_MAP;
 
   const actionObj = actionMap[gesture];
   if (!actionObj || !actionObj.id) return;
 
   const handler = ACTION_HANDLERS[actionObj.id];
-  console.log(`Performing action: ${actionObj.id}`);
   if (handler) handler(actionObj.value, activeTab).catch(console.error);
   return;
 }

@@ -36,5 +36,4 @@ model.compile({ optimizer: 'adam', loss: 'categoricalCrossentropy', metrics: ['a
     JSON.stringify(Object.fromEntries(Object.entries(labelToIndex).map(([label, i]) => [i, label])), null, 2)
   );
 
-  console.log('✅ Model and label mapping saved.');
 })();

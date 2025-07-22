@@ -15,7 +15,6 @@ async function updateOptions() {
   const data = await chrome.storage.sync.get(['mirrorEnabled', 'actionMap']);
   currentOptions.mirrorEnabled = data.mirrorEnabled ?? false;
   currentOptions.actionMap = data.actionMap;
-  console.log("Options initialized/updated:", currentOptions);
 }
 
 async function setupModels() {
@@ -23,7 +22,6 @@ async function setupModels() {
   await tf.setBackend('webgl');
   await tf.ready();
   gestureModel = await tf.loadLayersModel(chrome.runtime.getURL('core/model/model.json'));
-  console.log("Custom gesture model loaded successfully.");
 }
 
 async function startOffscreenDocument() {
@@ -36,7 +34,6 @@ async function startOffscreenDocument() {
   }
 
   try {
-    console.log("Starting offscreen document...");
     await chrome.offscreen.createDocument({
         url: 'ui/offscreen.html',
         reasons: ['USER_MEDIA'],
@@ -62,7 +59,6 @@ async function closeOffscreenDocument() {
     isClosingOffscreenDocument = true;
 
     if (await chrome.offscreen.hasDocument()) {
-      console.log("Closing offscreen document...");
       await chrome.offscreen.closeDocument();
     }
   } catch (error) {
@@ -74,12 +70,10 @@ async function closeOffscreenDocument() {
 
 async function processKeypoints(keypoints) {
   if (!gestureModel) {
-    console.log("Gesture model not ready.");
     return;
   }
   try {
     let gesture = await detectGesture(keypoints, gestureModel, tf);
-
     if (gesture === 'Point' || gesture === 'Thumb Point') {
       const pointingDirection = getPointingDirection(keypoints, gesture, currentOptions.mirrorEnabled);
       gesture += ` (${pointingDirection})`;
@@ -122,8 +116,6 @@ async function manageCameraSource() {
     return;
   }
 
-  console.log(`Switching camera source from '${activeCameraSource}' to '${desiredSource}'`);
-
   if (activeCameraSource === 'options' && optionsPort) {
     optionsPort.postMessage({ type: 'stop-camera' });
   } else if (activeCameraSource === 'offscreen') {
@@ -143,12 +135,10 @@ chrome.runtime.onConnect.addListener(async (port) => {
   if (port.name === "options-page") {
     optionsPort = port;
     optionsTabId = port.sender.tab.id;
-    console.log("Options page connected with tabId:", optionsTabId);
 
     await manageCameraSource(); // Initial check when page connects
 
     port.onDisconnect.addListener(async () => {
-      console.log("Options page disconnected.");
       if (activeCameraSource === 'options') {
         activeCameraSource = 'none';
       }
@@ -176,6 +166,7 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
       }
       break;
     case 'toggle-recognition':
+      sendResponse({ status: "acknowledged" });
       await toggleRecognition(message.isActive);
       break;
     case 'getCameraStatus':

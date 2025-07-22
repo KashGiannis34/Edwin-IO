@@ -25,7 +25,6 @@ async function setupHandposeModel() {
     modelType: 'lite',
   };
   handposeModel = await handPoseDetection.createDetector(detectorModel, detectorConfig);
-  console.log("Handpose model loaded in offscreen page.");
 }
 
 async function startCamera() {
@@ -41,7 +40,6 @@ async function startCamera() {
       processingCanvas.height = video.videoHeight;
     };
     await video.play();
-    console.log("Setup offscreen detection");
     sendKeypointsLoop();
   } catch (err) {
     console.error("Error starting camera in offscreen:", err);
@@ -57,8 +55,6 @@ async function sendKeypointsLoop() {
 
   const predictions = await getFilteredHands(handposeModel, processingCanvas);
   const keypoints = predictions.length > 0 ? predictions[0].keypoints : null;
-
-  console.log(predictions);
 
   chrome.runtime.sendMessage({
     type: 'keypoints',

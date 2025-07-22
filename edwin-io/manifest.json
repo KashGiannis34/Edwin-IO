@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Gesture Dock",
+  "name": "Edwin IO",
   "version": "2.0",
-  "description": "Control your browser with hand gestures.",
+  "description": "Enhanced Dynamic Web Interface and Navigation. Control your browser with hand gestures.",
   "permissions": [
     "storage",
     "scripting",
@@ -25,12 +25,17 @@
     "type": "module"
   },
   "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
   "web_accessible_resources": [
     {
       "resources": [
         "ui/offscreen.html",
+        "ui/permissions.html",
+        "ui/css/*.css",
         "core/model/*.json",
         "core/model/*.bin",
         "icons/*.png"

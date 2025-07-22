@@ -6,7 +6,7 @@ gesture-model-pipeline/build-model/venv
 gesture-model-pipeline/build-model/node_modules
 gesture-model-pipeline/build-model/package-lock.json
 gesture-model-pipeline/data-collection/.parcel-cache
-gesture-dock/.parcel-cache
-gesture-dock/node_modules
-gesture-dock/dist
-gesture-dock/package-lock.json
+edwin-io/.parcel-cache
+edwin-io/node_modules
+edwin-io/dist
+edwin-io/package-lock.json

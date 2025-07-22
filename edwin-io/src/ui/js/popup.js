@@ -10,13 +10,13 @@ chrome.storage.sync.get('mirrorEnabled', (data) => {
   mirrorToggle.checked = !!data.mirrorEnabled;
 });
 
-chrome.runtime.sendMessage({ type: 'getCameraStatus' }, (response) => {
+chrome.runtime.sendMessage({ type: 'getCameraStatus' }, async (response) => {
   if (chrome.runtime.lastError) {
     return;
   }
 
   if (response && response.isCameraActive != cameraToggle.checked) {
-    chrome.runtime.sendMessage({ 'type': 'toggle-recognition', 'isActive': cameraToggle.checked });
+    await handleCameraPermission(cameraToggle.checked);
   }
 });
 
@@ -24,12 +24,12 @@ openDashboardBtn.addEventListener('click', () => {
   chrome.runtime.openOptionsPage();
 });
 
-cameraToggle.addEventListener('change', () => {
+cameraToggle.addEventListener('change', async () => {
   const isActive = cameraToggle.checked;
 
   chrome.storage.local.set({ recognitionActive: isActive });
 
-  chrome.runtime.sendMessage({ type: 'toggle-recognition', isActive });
+  await handleCameraPermission(isActive);
 });
 
 mirrorToggle.addEventListener('change', () => {
@@ -37,3 +37,23 @@ mirrorToggle.addEventListener('change', () => {
 
   chrome.storage.sync.set({ mirrorEnabled: isActive });
 });
+
+async function handleCameraPermission(isActive) {
+  if (isActive) {
+    try {
+      const permissionStatus = await navigator.permissions.query({ name: 'camera' });
+
+      if (permissionStatus.state !== 'granted') {
+        const permissionsUrl = chrome.runtime.getURL('ui/permissions.html');
+        chrome.tabs.create({ url: permissionsUrl });
+        return;
+      }
+    } catch (err) {
+      console.error("Could not check camera permission:", err);
+      chrome.tabs.create({ url: 'permissions.html' });
+      return;
+    }
+  }
+
+  chrome.runtime.sendMessage({ type: 'toggle-recognition', isActive });
+}

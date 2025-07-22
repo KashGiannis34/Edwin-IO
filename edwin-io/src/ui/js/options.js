@@ -176,7 +176,6 @@ function handleActionMapUI() {
   document.getElementById('set-to-default').onclick = () => {
     if (confirm("Are you sure you want to reset all mappings to their default settings?")) {
       actionMap = DEFAULT_ACTION_MAP;
-      console.log(actionMap);
       updateActionMap();
       handleActionMapUI();
     }
@@ -195,7 +194,6 @@ async function initActionMap(defaultVal, extraActions) {
   } else {
     actionMap = data['actionMap'];
   }
-  console.log('Action map initialized:', actionMap);
   extraActions();
 }
 
@@ -238,7 +236,6 @@ async function setupHandposeModel() {
     modelType: 'full',
   };
   handposeModel = await handPoseDetection.createDetector(detectorModel, detectorConfig);
-  console.log("Handpose model loaded in options page.");
 }
 
 async function startLocalCamera() {

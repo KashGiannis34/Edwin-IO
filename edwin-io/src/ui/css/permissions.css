@@ -1,0 +1,133 @@
+:root {
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --bg-main: #f9fafb;
+  --border-color: #e5e7eb;
+  --accent-color-static: #4f46e5;
+  --success-color: #16a34a;
+  --remove-color: #ef4444;
+  --transition-speed: 0.3s;
+}
+
+/* --- Body Layout --- */
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+/* --- Main Content Card --- */
+.permission-card {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), 0 10px 30px rgba(0, 0, 0, 0.07);
+  padding: 2.5rem;
+  max-width: 450px;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  /* A subtle entrance animation */
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- Icon Styling --- */
+.icon-container {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f2ff; /* Light accent background */
+  border-radius: 50%;
+  margin-bottom: 0.5rem;
+}
+
+.icon-container svg {
+  width: 36px;
+  height: 36px;
+  color: var(--accent-color-static);
+  transition: color var(--transition-speed) ease;
+}
+
+/* --- Typography --- */
+h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+p {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 380px; /* Improve readability */
+}
+
+/* --- Loading Spinner --- */
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(79, 70, 229, 0.2); /* Light accent color */
+  border-top-color: var(--accent-color-static); /* Solid accent color */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0.5rem 0;
+}
+
+/* Hide spinner by default, your JS will control visibility */
+body:not(.loading) .spinner {
+    display: none;
+}
+/* Add a 'loading' class to the body in JS initially */
+body.loading .icon-container {
+    display: none;
+}
+
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* --- State-Specific Styles (Control with JS) --- */
+
+/* Style for when permission is denied */
+body.denied-state .icon-container {
+  background-color: #feeeee; /* Light red background */
+}
+body.denied-state .icon-container svg {
+  color: var(--remove-color);
+}
+
+/* Style for when permission is granted */
+body.granted-state .icon-container {
+  background-color: #f0fdf4; /* Light green background */
+}
+body.granted-state .icon-container svg {
+  color: var(--success-color);
+}

@@ -81,8 +81,11 @@ h1 {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke-width='2.5' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='m19.5 8.25-7.5 7.5-7.5-7.5' /%3E%3C/svg%3E");
   background-position: right 0.75rem center;
   background-repeat: no-repeat;
-  background-size: 1.1em 1.1em;
-  padding-right: 2.5rem;
+  background-size: 1.25em 1.25em;
+}
+
+.mapping-pill input {
+  padding-right: 0.8rem;
 }
 
 .mapping-pill select:hover,
@@ -105,15 +108,34 @@ h1 {
   align-items: center;
 }
 
+.value-container > .predefined-select,
+.value-container > .value-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 1;
+  visibility: visible;
+  transition: all var(--transition-speed) ease-in-out;
+  z-index: 0;
+}
+
+.value-container > .hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .value-select-overlay {
   position: absolute;
   top: 0;
   right: 0;
   height: 100%;
   width: 45px;
-  opacity: 0;
-  cursor: pointer;
+  background: transparent;
+  border: none !important;
+  font-size:0;
   z-index: 5;
+  cursor: pointer;
 }
 
 /* --- Buttons --- */
@@ -140,7 +162,7 @@ h1 {
 }
 
 #set-to-default {
-  border: 1px solid var(--border-color);
+  border: none;
   background-color: #ffffff;
   color: var(--text-secondary);
 }
@@ -148,15 +170,6 @@ h1 {
 #set-to-default:hover {
   background-color: var(--bg-hover);
   border-color: #d1d5db;
-}
-
-#add-mapping {
-  color: white;
-  background: var(--accent-gradient);
-}
-
-#add-mapping:hover {
-  background: var(--accent-hover);
 }
 
 .remove-btn {
@@ -198,26 +211,15 @@ h1 {
   transition: all var(--transition-speed) ease-in-out;
 }
 
-#set-to-default {
-  border: 1px solid var(--border-color);
-  background-color: #ffffff;
-  color: #374151;
-}
-
-#set-to-default:hover {
-  background-color: #f9fafb;
-  border-color: #d1d5db;
-}
-
 #add-mapping {
   border: none;
-  background-color: var(--accent-color);
+  background: var(--accent-gradient);
   color: white;
 }
 
 #add-mapping:hover {
-  background-color: #059669;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+  background: var(--accent-hover);
+  transition: all var(--transition-speed) ease-in-out;
 }
 
 #gesture-area {
