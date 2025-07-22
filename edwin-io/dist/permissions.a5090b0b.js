@@ -1,0 +1,2 @@
+(async()=>{try{(await navigator.mediaDevices.getUserMedia({video:!0})).getTracks().forEach(e=>e.stop()),chrome.runtime.sendMessage({type:"toggle-recognition",isActive:!0},e=>{window.close()})}catch(e){"NotAllowedError"===e.name&&(document.querySelector("h1").innerText="Permission Denied",document.querySelector("p").innerText="Camera access was not granted. You can change this in the browser's site settings. This tab will close shortly."),setTimeout(()=>window.close(),4e3)}})();
+//# sourceMappingURL=permissions.a5090b0b.js.map
