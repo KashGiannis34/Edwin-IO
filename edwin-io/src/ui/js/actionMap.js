@@ -120,3 +120,10 @@ export const DEFAULT_ACTION_MAP = {
   "Four":          { id: "reloadPage", value: null },
   "Open Hand":     { id: "openDashboard", value: null }
 };
+
+export const REPEAT_COOLDOWN_TIMES = {
+  "scrollBy": 750,
+  "moveTab": 850,
+  "controlZoom": 850,
+  "switchTab": 950,
+}

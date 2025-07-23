@@ -118,7 +118,7 @@ export const ACTION_HANDLERS = {
       const tabs = await chrome.tabs.query({ currentWindow: true });
       if (tabs.length <= 1) return;
       const idx = tabs.findIndex(t => t.active);
-      const newIndex = (value === 'next')
+      const newIndex = (value === 'previous')
         ? (idx + 1) % tabs.length
         : (idx - 1 + tabs.length) % tabs.length;
       await chrome.tabs.update(tabs[newIndex].id, { active: true });

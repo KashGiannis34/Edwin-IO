@@ -1,4 +1,4 @@
-import { DEFAULT_ACTION_MAP } from "../ui/js/actionMap";
+import { DEFAULT_ACTION_MAP, REPEAT_COOLDOWN_TIMES } from "../ui/js/actionMap";
 import { ACTION_HANDLERS } from "./actionHandlers";
 
 let lastGesture = 'None';
@@ -6,7 +6,7 @@ let stableGesture = 'None';
 let lastGestureTime = 0;
 const labelMapUrl = `${chrome.runtime.getURL('core/model/label_mapping.json')}?t=${Date.now()}`;
 const labelMapPromise = fetch(labelMapUrl).then(res => res.json());
-const REPEAT_GESTURE_TIME = 800;
+const REPEAT_GESTURE_TIME = 1250;
 const NEW_GESTURE_TIME = 500;
 let cooldownTime = NEW_GESTURE_TIME;
 let activeTab = null;
@@ -28,9 +28,10 @@ async function triggerAction(gesture) {
 
   const actionObj = actionMap[gesture];
   if (!actionObj || !actionObj.id) return;
-
+  cooldownTime = REPEAT_COOLDOWN_TIMES[actionObj.id] ?? 1250;
   const handler = ACTION_HANDLERS[actionObj.id];
   if (handler) handler(actionObj.value, activeTab).catch(console.error);
+
   return;
 }
 
@@ -45,7 +46,6 @@ export function updateStableGesture(gesture) {
   } else if (now - lastGestureTime >= cooldownTime) {
     stableGesture = gesture;
     lastGestureTime = now;
-    cooldownTime = REPEAT_GESTURE_TIME;
     triggerAction(stableGesture);
   }
 }
