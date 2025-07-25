@@ -8,5 +8,5 @@ gesture-model-pipeline/build-model/package-lock.json
 gesture-model-pipeline/data-collection/.parcel-cache
 edwin-io/.parcel-cache
 edwin-io/node_modules
-edwin-io/dist
 edwin-io/package-lock.json
+gesture-model-pipeline/build-model/model_analysis/venv

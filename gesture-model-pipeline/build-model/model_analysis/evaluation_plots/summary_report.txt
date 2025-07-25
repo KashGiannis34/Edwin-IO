@@ -1,0 +1,30 @@
+========================================
+      Classification Report
+========================================
+              precision    recall  f1-score   support
+
+      Circle      0.945     1.000     0.972      2170
+        Four      0.957     0.982     0.969      2011
+   NoGesture      0.800     0.893     0.844      2008
+   Open Hand      0.987     0.943     0.965      2011
+       Point      0.995     1.000     0.998      2011
+     Rock On      1.000     0.976     0.988      2014
+      Surfer      1.000     0.729     0.843      2011
+       Three      0.944     0.923     0.933      2006
+ Thumb Point      0.804     0.955     0.873      2023
+         Two      1.000     0.964     0.981      2002
+
+    accuracy                          0.937     20267
+   macro avg      0.943     0.936     0.937     20267
+weighted avg      0.943     0.937     0.937     20267
+
+
+========================================
+      Top Misclassifications
+========================================
+Top Misclassifications (True -> Predicted):
+- Surfer -> Thumb Point: 464 times
+- Three -> NoGesture: 137 times
+- NoGesture -> Circle: 126 times
+- Thumb Point -> NoGesture: 91 times
+- Surfer -> NoGesture: 81 times

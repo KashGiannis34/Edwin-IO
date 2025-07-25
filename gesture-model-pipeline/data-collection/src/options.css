@@ -1,17 +1,54 @@
 body {
-  font-family: sans-serif;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #fff;
+  color: #333;
+  margin: 0;
+  padding: 2rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1rem;
 }
 
-/* New container for the side-by-side view */
+h1 {
+  margin-bottom: 0.5rem;
+  font-size: 1.8rem;
+}
+
+h3 {
+  margin: 1rem 0 0.5rem;
+  font-size: 1.2rem;
+  color: #444;
+}
+
+button {
+  background-color: #007bff;
+  border: none;
+  color: white;
+  font-size: 0.95rem;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+button:disabled {
+  background-color: #999;
+  cursor: not-allowed;
+}
+
+#status-text {
+  margin: 0.5rem 0 1rem;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
 .main-display {
   display: flex;
-  align-items: flex-start;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 2rem;
-  margin-top: 1rem;
+  margin: 1rem 0;
 }
 
 .video-container {
@@ -22,6 +59,7 @@ body {
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
+
 #webcam, #overlay-canvas {
   position: absolute;
   top: 0;
@@ -37,19 +75,73 @@ body {
   display: none;
 }
 
-.normalized-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
 .normalized-container h2 {
   font-size: 1rem;
   font-weight: 500;
   color: #555;
-  margin: 0 0 0.5rem 0;
+  margin-bottom: 0.5rem;
+  text-align: center;
 }
 #normalized-canvas {
   border: 1px solid #ddd;
   background-color: #f8f8f8;
   border-radius: 8px;
+}
+
+/* Gesture Keybinds */
+#gesture-keys {
+  max-width: 800px;
+  width: 100%;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+#gesture-keys-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  margin: 0.5rem 0 1rem 0;
+  justify-content: center;
+}
+
+#gesture-keys-list li {
+  background-color: #eaeaea;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.85rem;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+#gesture-keys-list li code {
+  background-color: #d1d1d1;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+/* Sample Counts */
+#sample-counts {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-top: 1.5rem;
+  width: 300px;
+  text-align: left;
+}
+
+#sample-counts strong {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+#sample-list {
+  list-style: none;
+  padding-left: 0;
+  font-size: 0.9rem;
 }
