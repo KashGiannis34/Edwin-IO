@@ -3,9 +3,7 @@
 
 Turn yourself into Tony Stark with **Edwin IO**, the Chrome extension that brings futuristic, hands free control to Google Chrome. Named after Howard Stark's butler, Edwin Jarvis, this extension allows you to command your browser with simple hand gestures detected through your webcam. Effortlessly scroll, click, and navigate the web, all without touching your mouse or keyboard.
 
-[Click Here](https://chrome.google.com/webstore/detail/bnfehhpejojffoplpnimdodfidgfmhdc) to Download the extension on the Chrome webstore.
-
-
+**[CLICK HERE](https://chrome.google.com/webstore/detail/bnfehhpejojffoplpnimdodfidgfmhdc)** to download the extension on the Chrome webstore.
 
 <center>
 <img src='./images/Edwin_4.png' width='50%' />
