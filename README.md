@@ -1,23 +1,15 @@
 # Edwin IO
-<img src='./images/icon.png' width='10%' style="border-radius:3px;" />
+[<img src='./images/icon.png' width='10%' />](https://chrome.google.com/webstore/detail/bnfehhpejojffoplpnimdodfidgfmhdc)
 
 Turn yourself into Tony Stark with **Edwin IO**, the Chrome extension that brings futuristic, hands free control to Google Chrome. Named after Howard Stark's butler, Edwin Jarvis, this extension allows you to command your browser with simple hand gestures detected through your webcam. Effortlessly scroll, click, and navigate the web, all without touching your mouse or keyboard.
+
+[Click Here](https://chrome.google.com/webstore/detail/bnfehhpejojffoplpnimdodfidgfmhdc) to Download the extension on the Chrome webstore.
+
+
 
 <center>
 <img src='./images/Edwin_4.png' width='50%' />
 </center>
-
-## Installation
-
-The extension has not been published yet on the Chrome Web Store. However, you can easily install it for development and personal use by following these steps:
-
-1.  **Download the Extension:** Download the latest release from the **[Edwin IO Download Repository](https://github.com/KashGiannis34/Edwin-IO-Download)**. Click the `Code` button and select `Download ZIP`.
-2.  **Unzip the File:** Unzip the downloaded folder.
-3.  **Open Chrome Extensions:** Open Google Chrome and navigate to `chrome://extensions`.
-4.  **Enable Developer Mode:** In the top right corner, turn on the "Developer mode" toggle.
-5.  **Load the Extension:** Click the "Load unpacked" button and select the unzipped folder you downloaded in step 2.
-
-The Edwin IO icon should now appear in your Chrome toolbar, ready to use\!
 
 ## Features
 
